@@ -124,54 +124,27 @@ TelegramService 新增 MarkdownV2 安全转义（保护代码块）、统一的 
 
 ## 安装与升级
 
-环境要求（与上游一致）：
+当前分支使用 **PHP 8.4 + Laravel 12**，已提交经过测试的 composer.lock。需要 MySQL 兼容数据库、Redis、PHP CLI 的 pcntl/posix 与项目要求的扩展。后台前端构建产物已包含，服务器不需要 Node。
 
-- PHP7.3+
-- Composer
-- MySQL5.5+
-- Redis
-- Laravel
+宝塔全新安装请按 [完整安装步骤](docs/baota-install.md)，安全升级范围与测试见 [升级记录](docs/framework-security-upgrade.md)。第三方订阅管理见 [功能说明](docs/external-subscriptions.md)。
 
-全新安装：
+全新安装使用独立空数据库；以站点文件所有者运行（先确认 CLI PHP 版本）：
 
-```shell
-sh init.sh
+```bash
+PHP_BIN=/www/server/php/84/bin/php bash init.sh
 ```
 
-从 xiao v2board 迁移，数据库无需任何改动：
+安装器自动生成 .env、导入原系统 SQL、创建第三方订阅表并输出管理员账号和后台路径。不要预先创建 .env，不要对非空数据库运行安装器。
 
-```shell
-git remote set-url origin https://github.com/codeman857/v3board
-git checkout master
-./update.sh
+升级前备份数据库、.env、站点配置与上传；原有 PHP 7/8.0 环境需要先升级到 PHP 8.4，再运行：
+
+```bash
+PHP_BIN=/www/server/php/84/bin/php bash update.sh
 ```
 
-然后把缓存驱动改为 redis，刷新设置缓存并重启队列：
+脚本使用 fast-forward 拉取和 composer install + audit，不再删除锁文件、重新解析依赖或 reset --hard。出现本地文件改动、安全公告、缺少扩展或 SQL 错误时会停止。完成后重载 PHP-FPM；使用 Webman 的站点另需重启常驻进程。Horizon 应由 Supervisor 管理，原有每分钟 schedule:run 必须保留。
 
-```shell
-sed -i 's/^CACHE_DRIVER=.*/CACHE_DRIVER=redis/' .env
-php artisan config:clear
-php artisan config:cache
-php artisan horizon:terminate
-```
-
-最后进入后台重新保存主题：主题配置 → 选择 default 主题 → 主题设置 → 确定保存。
-
-日常升级：
-
-```shell
-./update.sh
-```
-
-`update.sh` 会拉取代码、更新依赖并执行 `database/update.sql`（新表、新字段都在里面，重复执行安全）。升级后台前端后如果站点前面有 CDN 缓存了静态文件，清一次 `/assets/admin/` 的缓存（分包文件名带哈希不会串，真正要换新的是 `assets/admin.js`、`admin.css`、`favicon.png`，CDN 忽略查询串时旧的 admin.js 会去找已删除的分包导致后台白屏）。php-fpm 开了 opcache 且不校验文件时间戳的，升级后 reload 一次 php-fpm，否则可能还在执行旧的编译视图。使用 webman 常驻模式的站点升级后需要重启 webman。
-
-合并上游 wyx2685/v2board 有冲突时：
-
-```shell
-sh merge.sh
-```
-
-上游重新打包旧后台时会改 `public/assets/admin/umi.js` 等文件，而本仓库已经删除它们，合并会报 modify/delete 冲突，直接 `git rm` 这些文件即可。
+合并上游时保留本分支的依赖与锁定文件、Laravel 兼容改动及第三方订阅接入；在独立分支跑回归后再部署。旧版 merge.sh 含自动处理策略，合并前应先检查其内容及实际冲突，不能保证任意上游版本无冲突。
 
 ## 社区与反馈
 

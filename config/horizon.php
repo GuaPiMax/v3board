@@ -1,10 +1,6 @@
 <?php
 
 use Illuminate\Support\Str;
-use Linfo\Linfo;
-
-$lInfo = new Linfo();
-$parser = $lInfo->getParser();
 
 return [
 
@@ -169,7 +165,7 @@ return [
     */
 
     'environments' => [
-        'local' => [
+        '*' => [
             'V2board' => [
                 'connection' => 'redis',
                 'queue' => [
@@ -182,10 +178,7 @@ return [
                 ],
                 'balance' => 'auto',
                 'minProcesses' => 1,
-                'maxProcesses' => min(
-                    (int)ceil($parser->getRam()['total'] / 1024 / 1024 / 1024 * 6),
-                    (int)env('HORIZON_MAX_PROCESSES', 128)
-                ),
+                'maxProcesses' => max(1, (int)env('HORIZON_MAX_PROCESSES', 6)),
                 'tries' => 1,
                 'balanceCooldown' => 3,
             ],

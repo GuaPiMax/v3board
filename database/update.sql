@@ -506,7 +506,8 @@ BEGIN
 
 SELECT COUNT(1) INTO IndexIsThere
 FROM INFORMATION_SCHEMA.STATISTICS
-WHERE table_name   = 'v2_stat_user'
+WHERE table_schema = DATABASE()
+  AND table_name   = 'v2_stat_user'
   AND   index_name   = 'server_id';
 
 IF IndexIsThere != 0 THEN

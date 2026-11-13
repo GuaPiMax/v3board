@@ -15,6 +15,9 @@ $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+// Keep the existing translation directory when upgrading the framework.
+$app->useLangPath(dirname(__DIR__) . '/resources/lang');
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces

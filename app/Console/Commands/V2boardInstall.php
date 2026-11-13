@@ -1,155 +1,74 @@
 <?php
-
 namespace App\Console\Commands;
-
 use Illuminate\Console\Command;
 use Illuminate\Encryption\Encrypter;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Utils\Helper;
-use Illuminate\Support\Facades\DB;
 
 class V2boardInstall extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'v2board:install';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'v2board 安装';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
+    protected $description = '在空数据库安装 V3Board';
     public function handle()
     {
         try {
-            $this->info("__     ______  ____                      _  ");
-            $this->info("\ \   / /___ \| __ )  ___   __ _ _ __ __| | ");
-            $this->info(" \ \ / /  __) |  _ \ / _ \ / _` | '__/ _` | ");
-            $this->info("  \ V /  / __/| |_) | (_) | (_| | | | (_| | ");
-            $this->info("   \_/  |_____|____/ \___/ \__,_|_|  \__,_| ");
-            if (\File::exists(base_path() . '/.env')) {
-                $securePath = config('v2board.secure_path', config('v2board.frontend_admin_path', hash('crc32b', config('app.key'))));
-                $this->info("访问 http(s)://你的站点/{$securePath} 进入管理面板，你可以在用户中心修改你的密码。");
-                abort(500, '如需重新安装请删除目录下.env文件');
+            if (is_file(base_path('.env'))) {
+                $this->error('检测到 .env，拒绝覆盖安装。已有站点请使用 v2board:update。');
+                return self::FAILURE;
             }
-
-            if (!copy(base_path() . '/.env.example', base_path() . '/.env')) {
-                abort(500, '复制环境文件失败，请检查目录权限');
-            }
-            $this->saveToEnv([
+            $settings = [
                 'APP_KEY' => 'base64:' . base64_encode(Encrypter::generateKey('AES-256-CBC')),
-                'DB_HOST' => $this->ask('请输入数据库地址（默认:localhost）', 'localhost'),
+                'DB_HOST' => $this->ask('请输入数据库地址', '127.0.0.1'),
+                'DB_PORT' => $this->ask('请输入数据库端口', '3306'),
                 'DB_DATABASE' => $this->ask('请输入数据库名'),
                 'DB_USERNAME' => $this->ask('请输入数据库用户名'),
-                'DB_PASSWORD' => $this->ask('请输入数据库密码')
-            ]);
-            \Artisan::call('config:clear');
-            \Artisan::call('config:cache');
-            try {
-                DB::connection()->getPdo();
-            } catch (\Exception $e) {
-                abort(500, '数据库连接失败');
+                'DB_PASSWORD' => $this->secret('请输入数据库密码') ?? '',
+            ];
+            foreach ($settings as $value) {
+                if (!is_string($value) || preg_match('/[\x00-\x1f\x7f]/', $value)) throw new \RuntimeException('数据库配置包含无效控制字符');
             }
-            $file = \File::get(base_path() . '/database/install.sql');
-            if (!$file) {
-                abort(500, '数据库文件不存在');
-            }
-            $sql = str_replace("\n", "", $file);
-            $sql = preg_split("/;/", $sql);
-            if (!is_array($sql)) {
-                abort(500, '数据库文件格式有误');
-            }
-            $this->info('正在导入数据库请稍等...');
-            foreach ($sql as $item) {
-                try {
-                    DB::select(DB::raw($item));
-                } catch (\Exception $e) {
-                }
-            }
-            $this->info('数据库导入完成');
-            $email = '';
-            while (!$email) {
-                $email = $this->ask('请输入管理员邮箱?');
-            }
+            if (!$settings['DB_DATABASE'] || !$settings['DB_USERNAME'] || !ctype_digit($settings['DB_PORT'])) throw new \RuntimeException('数据库名称、用户名和端口无效');
+            config(['database.default' => 'mysql', 'app.key' => $settings['APP_KEY']]);
+            foreach (['host','port','database','username','password'] as $key) config(['database.connections.mysql.' . $key => $settings['DB_' . strtoupper($key)]]);
+            DB::purge('mysql');
+            DB::connection()->getPdo();
+            if (DB::select('SHOW TABLES')) throw new \RuntimeException('数据库非空，拒绝导入安装 SQL，请创建独立空数据库');
+            $email = $this->ask('请输入管理员邮箱');
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) throw new \RuntimeException('管理员邮箱格式无效');
+            $this->saveEnvironment($settings);
+            $sql = file_get_contents(base_path('database/install.sql'));
+            if (!$sql) throw new \RuntimeException('安装 SQL 不存在');
+            DB::unprepared($sql);
+            if ($this->call('migrate', ['--path' => 'database/migrations/2026_11_13_000001_create_external_subscriptions.php', '--force' => true]) !== 0) throw new \RuntimeException('第三方订阅数据表初始化失败');
             $password = Helper::guid(false);
-            if (!$this->registerAdmin($email, $password)) {
-                abort(500, '管理员账号注册失败，请重试');
-            }
-
-            $this->info('一切就绪');
-            $this->info("管理员邮箱：{$email}");
-            $this->info("管理员密码：{$password}");
-
-            $defaultSecurePath = hash('crc32b', config('app.key'));
-            $this->info("访问 http(s)://你的站点/{$defaultSecurePath} 进入管理面板，你可以在用户中心修改你的密码。");
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
+            $user = new User();
+            $user->email = $email;
+            $user->password = password_hash($password, PASSWORD_DEFAULT);
+            $user->uuid = Helper::guid(true);
+            $user->token = Helper::guid();
+            $user->is_admin = 1;
+            $user->saveOrFail();
+            if ($this->call('config:cache') !== 0) throw new \RuntimeException('配置缓存失败');
+            $this->info('安装成功（包含第三方订阅数据表）');
+            $this->line('管理员邮箱：' . $email);
+            $this->line('管理员密码：' . $password);
+            $this->line('后台路径：/' . hash('crc32b', $settings['APP_KEY']));
+            return self::SUCCESS;
+        } catch (\Throwable $e) {
+            $this->error('安装失败：' . $e->getMessage());
+            $this->warn('不要对非空数据库重试安装。若已经生成 .env，请保留并排查。');
+            return self::FAILURE;
         }
     }
-
-    private function registerAdmin($email, $password)
+    private function saveEnvironment(array $settings): void
     {
-        $user = new User();
-        $user->email = $email;
-        if (strlen($password) < 8) {
-            abort(500, '管理员密码长度最小为8位字符');
+        $text = file_get_contents(base_path('.env.example'));
+        foreach ($settings as $key => $value) {
+            $quoted = str_replace('$', '\\$', json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
+            $text = preg_replace_callback('/^' . preg_quote($key, '/') . '=[^\r\n]*/m', function () use ($key, $quoted) { return $key . '=' . $quoted; }, $text);
         }
-        $user->password = password_hash($password, PASSWORD_DEFAULT);
-        $user->uuid = Helper::guid(true);
-        $user->token = Helper::guid();
-        $user->is_admin = 1;
-        return $user->save();
-    }
-
-    private function saveToEnv($data = [])
-    {
-        function set_env_var($key, $value)
-        {
-            if (! is_bool(strpos($value, ' '))) {
-                $value = '"' . $value . '"';
-            }
-            $key = strtoupper($key);
-
-            $envPath = app()->environmentFilePath();
-            $contents = file_get_contents($envPath);
-
-            preg_match("/^{$key}=[^\r\n]*/m", $contents, $matches);
-
-            $oldValue = count($matches) ? $matches[0] : '';
-
-            if ($oldValue) {
-                $contents = str_replace("{$oldValue}", "{$key}={$value}", $contents);
-            } else {
-                $contents = $contents . "\n{$key}={$value}\n";
-            }
-
-            $file = fopen($envPath, 'w');
-            fwrite($file, $contents);
-            return fclose($file);
-        }
-        foreach($data as $key => $value) {
-            set_env_var($key, $value);
-        }
-        return true;
+        if (file_put_contents(base_path('.env'), $text, LOCK_EX) === false) throw new \RuntimeException('无法写入 .env');
+        @chmod(base_path('.env'), 0600);
     }
 }

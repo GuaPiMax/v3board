@@ -1,34 +1,18 @@
-#!/bin/bash
-
-if [ ! -d ".git" ]; then
-  echo "Please deploy using Git."
-  exit 1
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+PHP_BIN="${PHP_BIN:-php}"
+"$PHP_BIN" -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);' || { echo 'PHP 8.4+ is required' >&2; exit 1; }
+git rev-parse --git-dir >/dev/null
+git diff --quiet && git diff --cached --quiet || { echo 'Commit or back up tracked local changes first' >&2; exit 1; }
+git pull --ff-only origin master
+if [ ! -f composer.phar ]; then
+    curl -fL https://getcomposer.org/composer-stable.phar -o composer.phar
 fi
-
-if ! command -v git &> /dev/null; then
-    echo "Git is not installed! Please install git and try again."
-    exit 1
-fi
-
-git config --global --add safe.directory $(pwd)
-git fetch --all && git reset --hard origin/master && git pull origin master
-rm -rf composer.lock composer.phar
-wget https://github.com/composer/composer/releases/latest/download/composer.phar -O composer.phar
-php composer.phar update -vvv
-
-php_main_version=$(php -v | head -n 1 | cut -d ' ' -f 2 | cut -d '.' -f 1)
-if [ $php_main_version -ge 8 ]; then
-    php composer.phar require joanhey/adapterman
-    if ! php -m | grep -q "pcntl"; then
-        echo "Adding pcntl extension to cli-php.ini"
-        sed -i '/extension=redis.so/a extension=pcntl.so' cli-php.ini
-    fi
-    php -c cli-php.ini webman.php stop
-    echo "Webman stopped.Please restart it by yourself."
-fi
-
-php artisan v2board:update
-
-if [ -f "/etc/init.d/bt" ]; then
-  chown -R www $(pwd);
-fi
+"$PHP_BIN" -r 'foreach (["bootstrap/cache/packages.php", "bootstrap/cache/services.php"] as $file) { if (is_file($file) && !unlink($file)) { exit(1); } }'
+"$PHP_BIN" composer.phar install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+"$PHP_BIN" composer.phar audit --locked --no-dev --no-interaction
+"$PHP_BIN" artisan view:clear
+"$PHP_BIN" artisan route:clear
+"$PHP_BIN" artisan v2board:update
+echo 'Updated. Reload PHP-FPM / restart Webman if applicable; Supervisor should restart Horizon.'

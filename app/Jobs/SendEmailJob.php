@@ -40,6 +40,7 @@ class SendEmailJob implements ShouldQueue
             Config::set('mail.host', config('v2board.email_host', env('mail.host')));
             Config::set('mail.port', config('v2board.email_port', env('mail.port')));
             Config::set('mail.encryption', config('v2board.email_encryption', env('mail.encryption')));
+            Config::set('mail.scheme', config('v2board.email_encryption') === 'ssl' ? 'smtps' : 'smtp');
             Config::set('mail.username', config('v2board.email_username', env('mail.username')));
             Config::set('mail.password', config('v2board.email_password', env('mail.password')));
             Config::set('mail.from.address', config('v2board.email_from_address', env('mail.from.address')));
@@ -50,6 +51,8 @@ class SendEmailJob implements ShouldQueue
         $subject = $params['subject'];
         $params['template_name'] = 'mail.' . config('v2board.email_template', 'default') . '.' . $params['template_name'];
         try {
+            // Queue workers persist between jobs; discard transports configured by an earlier job.
+            Mail::purge();
             sleep(2); 
             Mail::send(
                 $params['template_name'],
@@ -70,7 +73,6 @@ class SendEmailJob implements ShouldQueue
         ];
 
         MailLog::create($log);
-        $log['config'] = config('mail');
         return $log;
     }
 }

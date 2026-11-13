@@ -1,41 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         bootstrap="vendor/autoload.php"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd" bootstrap="vendor/autoload.php" colors="true" cacheDirectory="_demo/phpunit-cache" failOnWarning="true">
     <testsuites>
-        <testsuite name="Unit">
-            <directory suffix="Test.php">./tests/Unit</directory>
-        </testsuite>
-
-        <testsuite name="Feature">
-            <directory suffix="Test.php">./tests/Feature</directory>
-        </testsuite>
+        <testsuite name="Application"><directory suffix="Test.php">tests/Unit</directory><directory suffix="Test.php">tests/Feature</directory></testsuite>
     </testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./app</directory>
-        </whitelist>
-    </filter>
-    <extensions>
-        <extension class="Tests\Bootstrap"/>
-    </extensions>
+    <source><include><directory suffix=".php">app</directory></include></source>
     <php>
-        <server name="APP_ENV" value="testing"/>
-        <server name="BCRYPT_ROUNDS" value="4"/>
-        <server name="CACHE_DRIVER" value="array"/>
-        <server name="MAIL_DRIVER" value="array"/>
-        <server name="QUEUE_CONNECTION" value="sync"/>
-        <server name="SESSION_DRIVER" value="array"/>
-        <server name="APP_CONFIG_CACHE" value="bootstrap/cache/config.phpunit.php"/>
-        <server name="APP_SERVICES_CACHE" value="bootstrap/cache/services.phpunit.php"/>
-        <server name="APP_PACKAGES_CACHE" value="bootstrap/cache/packages.phpunit.php"/>
-        <server name="APP_ROUTES_CACHE" value="bootstrap/cache/routes.phpunit.php"/>
-        <server name="APP_EVENTS_CACHE" value="bootstrap/cache/events.phpunit.php"/>
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_KEY" value="base64:dGVzdC1rZXl0ZXN0LWtleXRlc3Qta2V5dGVzdC1rZXk=" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="DB_CONNECTION" value="sqlite" force="true"/>
+        <env name="DB_DATABASE" value=":memory:" force="true"/>
+        <env name="CACHE_DRIVER" value="array" force="true"/>
+        <env name="MAIL_DRIVER" value="array" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="LOG_CHANNEL" value="stderr" force="true"/>
+        <env name="APP_CONFIG_CACHE" value="bootstrap/cache/config.phpunit.php" force="true"/>
+        <env name="APP_SERVICES_CACHE" value="bootstrap/cache/services.phpunit.php" force="true"/>
+        <env name="APP_PACKAGES_CACHE" value="bootstrap/cache/packages.phpunit.php" force="true"/>
+        <env name="APP_ROUTES_CACHE" value="bootstrap/cache/routes.phpunit.php" force="true"/>
+        <env name="APP_EVENTS_CACHE" value="bootstrap/cache/events.phpunit.php" force="true"/>
     </php>
 </phpunit>

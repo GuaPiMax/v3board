@@ -1,16 +1,11 @@
-#!/bin/bash
-
-rm -rf composer.phar
-wget https://github.com/composer/composer/releases/latest/download/composer.phar -O composer.phar
-php composer.phar install -vvv
-
-php_main_version=$(php -v | head -n 1 | cut -d ' ' -f 2 | cut -d '.' -f 1)
-if [ $php_main_version -ge 8 ]; then
-    php composer.phar require joanhey/adapterman
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+PHP_BIN="${PHP_BIN:-php}"
+"$PHP_BIN" -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);' || { echo 'PHP 8.4+ is required' >&2; exit 1; }
+if [ ! -f composer.phar ]; then
+    curl -fL https://getcomposer.org/composer-stable.phar -o composer.phar
 fi
-
-php artisan v2board:install
-
-if [ -f "/etc/init.d/bt" ]; then
-  chown -R www $(pwd);
-fi
+"$PHP_BIN" composer.phar install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+"$PHP_BIN" composer.phar audit --locked --no-dev --no-interaction
+"$PHP_BIN" artisan v2board:install

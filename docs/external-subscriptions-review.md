@@ -1,5 +1,7 @@
 # 第三方订阅检查记录
 
+> 此文为首次功能提交的历史记录。后续已执行 Laravel 12 安全升级；当前版本、审计和安装方式以 docs/framework-security-upgrade.md 和 docs/baota-install.md 为准，下面“原有依赖风险”不再代表当前锁定依赖。
+
 日期：2026-11-13。运行环境：PHP 8.4.27，Laravel 8.83.29，SQLite 内存测试数据库。对照基线：336987cc。
 
 ## 验证结果
