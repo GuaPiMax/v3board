@@ -55,6 +55,27 @@ class FrameworkUpgradeTest extends TestCase
         $this->assertSame($expiry,$user->fresh()->expired_at);
     }
 
+    public function test_horizon_uses_panel_admin_tokens_in_production(): void
+    {
+        $this->app->detectEnvironment(fn()=>'production');
+        // Keep the real route and both auth middleware; replace only Redis-backed statistics.
+        $this->app->instance(\Laravel\Horizon\Http\Controllers\DashboardStatsController::class,
+            new class extends \Laravel\Horizon\Http\Controllers\DashboardStatsController {
+                public function index(){return ['status'=>'inactive'];}
+            });
+        $admin=User::create(['email'=>'monitor-admin@example.com','password'=>'unused','uuid'=>'admin-uuid','token'=>'sub-admin','is_admin'=>1]);
+        $member=User::create(['email'=>'monitor-member@example.com','password'=>'unused','uuid'=>'member-uuid','token'=>'sub-member','is_admin'=>0]);
+        $request=\Illuminate\Http\Request::create('/');
+        $adminToken=(new AuthService($admin))->generateAuthData($request)['auth_data'];
+        $memberToken=(new AuthService($member))->generateAuthData($request)['auth_data'];
+        $this->getJson('/monitor/api/stats',['authorization'=>$adminToken])->assertOk()->assertJsonPath('status','inactive');
+        $this->getJson('/monitor/api/stats',['authorization'=>$memberToken])->assertForbidden();
+        $this->getJson('/monitor/api/stats',['authorization'=>'invalid'])->assertForbidden();
+        $this->getJson('/monitor/api/stats')->assertForbidden();
+        $forged=\Illuminate\Http\Request::create('/monitor/api/stats','GET',['user'=>['is_admin'=>1]]);
+        $this->assertFalse(\Laravel\Horizon\Horizon::check($forged));
+    }
+
     public function test_mail_uses_symfony_transport_and_queue_names_are_preserved(): void
     {
         config(['mail.driver'=>'array']);Mail::purge();
