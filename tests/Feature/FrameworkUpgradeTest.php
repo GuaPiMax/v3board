@@ -76,6 +76,17 @@ class FrameworkUpgradeTest extends TestCase
         $this->assertFalse(\Laravel\Horizon\Horizon::check($forged));
     }
 
+    public function test_first_theme_initialization_refreshes_current_request_config(): void
+    {
+        config(['theme.upgrade-test'=>null]);
+        \Illuminate\Support\Facades\File::shouldReceive('exists')->once()->andReturn(true);
+        \Illuminate\Support\Facades\File::shouldReceive('get')->once()->andReturn('{"configs":[{"field_name":"title","default_value":"Welcome"}]}');
+        \Illuminate\Support\Facades\File::shouldReceive('put')->once()->withArgs(fn($path,$body)=>str_ends_with($path,'config/theme/upgrade-test.php')&&str_contains($body,'Welcome'))->andReturn(1);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->once()->with('config:cache')->andReturn(0);
+        (new \App\Services\ThemeService('upgrade-test'))->init();
+        $this->assertSame(['title'=>'Welcome'],config('theme.upgrade-test'));
+    }
+
     public function test_mail_uses_symfony_transport_and_queue_names_are_preserved(): void
     {
         config(['mail.driver'=>'array']);Mail::purge();

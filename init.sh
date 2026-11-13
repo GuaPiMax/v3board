@@ -9,3 +9,6 @@ fi
 "$PHP_BIN" composer.phar install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 "$PHP_BIN" composer.phar audit --locked --no-dev --no-interaction
 "$PHP_BIN" artisan v2board:install
+if [ "$(id -u)" -eq 0 ] && [ -f /etc/init.d/bt ] && id www >/dev/null 2>&1; then
+    chown -R www:www "$(pwd)"
+fi

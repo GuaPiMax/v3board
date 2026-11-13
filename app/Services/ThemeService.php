@@ -28,9 +28,9 @@ class ThemeService
             $data[$config['field_name']] = isset($config['default_value']) ? $config['default_value'] : '';
         }
 
-        $data = var_export($data, 1);
+        $contents = var_export($data, 1);
         try {
-            if (!File::put(base_path() . "/config/theme/{$this->theme}.php", "<?php\n return $data ;")) {
+            if (!File::put(base_path() . "/config/theme/{$this->theme}.php", "<?php\n return $contents ;")) {
                 abort(500, "{$this->theme}初始化失败");
             }
         } catch (\Exception $e) {
@@ -38,10 +38,9 @@ class ThemeService
         }
 
         try {
-            Artisan::call('config:cache');
-            while (true) {
-                if (config("theme.{$this->theme}")) break;
-            }
+            // config:cache builds a fresh application; it does not refresh this request's repository.
+            config(["theme.{$this->theme}" => $data]);
+            if (Artisan::call('config:cache') !== 0) abort(500, "{$this->theme}配置缓存失败");
         } catch (\Exception $e) {
             abort(500, "{$this->theme}初始化失败");
         }
