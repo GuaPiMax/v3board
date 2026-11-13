@@ -307,6 +307,7 @@ class Helper
 
     public static function buildUri($uuid, $server)
     {
+        if (!empty($server['external'])) return \App\Services\ExternalSubscription\Output::uri($server);
         if ($server['type'] == 'v2node') {
             $server['type'] = $server['protocol'];
         }

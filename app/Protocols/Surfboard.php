@@ -13,7 +13,7 @@ class Surfboard
     public function __construct($user, $servers)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -95,6 +95,7 @@ class Surfboard
 
     public static function buildShadowsocks($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $config = [
             "{$server['name']}=ss",
             "{$server['host']}",
@@ -112,6 +113,7 @@ class Surfboard
 
     public static function buildVmess($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $config = [
             "{$server['name']}=vmess",
             "{$server['host']}",
@@ -152,6 +154,7 @@ class Surfboard
 
     public static function buildTrojan($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $config = [
             "{$server['name']}=trojan",
             "{$server['host']}",
@@ -181,6 +184,7 @@ class Surfboard
 
     public static function buildAnyTLS($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $tlsSettings = $server['tls_settings'] ?? [];
         $allowInsecure = ($server['insecure'] ?? ($tlsSettings['allow_insecure'] ?? 0)) == 1 ? 'true' : 'false';
         $sni = $server['server_name'] ?? ($tlsSettings['server_name'] ?? '');

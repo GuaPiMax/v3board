@@ -14,7 +14,7 @@ class v2RayTun
     public function __construct($user, $servers, array $options = null)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
         $this->options = $options ?? [];
     }
 

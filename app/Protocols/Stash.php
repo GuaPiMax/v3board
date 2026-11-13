@@ -14,7 +14,7 @@ class Stash
     public function __construct($user, $servers)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -109,11 +109,12 @@ class Stash
 
     public static function buildShadowsocks($password, $server)
     {
-        if ($server['cipher'] === '2022-blake3-aes-128-gcm') {
+        $password = $server['external_credential'] ?? $password;
+        if (empty($server['external']) && $server['cipher'] === '2022-blake3-aes-128-gcm') {
             $serverKey = Helper::getServerKey($server['created_at'], 16);
             $userKey = Helper::uuidToBase64($password, 16);
             $password = "{$serverKey}:{$userKey}";
-        } elseif ($server['cipher'] === '2022-blake3-aes-256-gcm') {
+        } elseif (empty($server['external']) && $server['cipher'] === '2022-blake3-aes-256-gcm') {
             $serverKey = Helper::getServerKey($server['created_at'], 32);
             $userKey = Helper::uuidToBase64($password, 32);
             $password = "{$serverKey}:{$userKey}";
@@ -124,7 +125,7 @@ class Stash
         $array['server'] = $server['host'];
         $array['port'] = $server['port'];
         $array['cipher'] = $server['cipher'];
-        $array['password'] = $password;
+        $array['password'] = $server['external_password'] ?? $password;
         $array['udp'] = true;
         if (isset($server['obfs']) && $server['obfs'] === 'http') {
             $array['plugin'] = 'obfs';
@@ -136,11 +137,12 @@ class Stash
             }
             $array['plugin-opts'] = $plugin_opts;
         }
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     public static function buildVmess($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $array = [];
         $array['name'] = $server['name'];
         $array['type'] = 'vmess';
@@ -195,11 +197,12 @@ class Stash
             }
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     public static function buildVless($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $array = [];
         $array['name'] = $server['name'];
         $array['type'] = 'vless';
@@ -258,17 +261,18 @@ class Stash
             }
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
     
     public static function buildTrojan($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [];
         $array['name'] = $server['name'];
         $array['type'] = 'trojan';
         $array['server'] = $server['host'];
         $array['port'] = $server['port'];
-        $array['password'] = $password;
+        $array['password'] = $server['external_password'] ?? $password;
         $array['udp'] = true;
         if(isset($server['network']) && in_array($server['network'], ["grpc", "ws"])){
             $array['network'] = $server['network'];
@@ -288,11 +292,12 @@ class Stash
         };
         if (!empty($server['server_name'])) $array['sni'] = $server['server_name'];
         if (!empty($server['allow_insecure'])) $array['skip-cert-verify'] = ($server['allow_insecure'] ? true : false);
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     public static function buildTuic($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [
             'name' => $server['name'],
             'type' => 'tuic',
@@ -300,7 +305,7 @@ class Stash
             'port' => $server['port'],
             'version' => 5,
             'uuid' => $password,
-            'password' => $password,
+            'password' => $server['external_password'] ?? $password,
             'alpn' => ['h3'],
             //'disable-sni' => $server['disable_sni'] ? true : false,
             //'reduce-rtt' => $server['zero_rtt_handshake'] ? true : false,
@@ -312,11 +317,12 @@ class Stash
             $array['sni'] = $server['server_name'];
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     public static function buildHysteria($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [];
         $array['name'] = $server['name'];
         $array['server'] = $server['host'];
@@ -358,17 +364,18 @@ class Stash
             $array['protocol'] = 'udp';
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
     
     public static function buildHysteria2($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $tlsSettings = $server['tls_settings'] ?? [];
         $array = [
             'name' => $server['name'],
             'type' => 'hysteria2',
             'server' => $server['host'],
-            'password' => $password,
+            'password' => $server['external_password'] ?? $password,
             'skip-cert-verify' => ($tlsSettings['allow_insecure'] ?? 0) == 1 ? true : false,
             'sni' => $tlsSettings['server_name'] ?? '',
             'udp' => true,
@@ -390,23 +397,24 @@ class Stash
             $array['obfs'] = $server['obfs'];
             $array['obfs-password'] = $server['obfs_password'];
         }
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     public static function buildAnyTLS($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [
             'name' => $server['name'],
             'type' => 'anytls',
             'server' => $server['host'],
             'port' => $server['port'],
-            'password' => $password,
+            'password' => $server['external_password'] ?? $password,
         ];
         $tlsSettings = $server['tls_settings'] ?? [];
         $array['client-fingerprint'] = !empty($tlsSettings['fingerprint']) ? $tlsSettings['fingerprint'] : 'chrome';
         $array['sni'] = $server['server_name'] ?? ($tlsSettings['server_name'] ?? '');
         $array['skip-cert-verify'] = ($server['insecure'] ?? ($tlsSettings['allow_insecure'] ?? 0)) == 1 ? true : false;
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     private function isRegex($exp)

@@ -13,7 +13,7 @@ class Shadowrocket
     public function __construct($user, $servers)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -29,6 +29,10 @@ class Shadowrocket
         $uri .= "STATUS=🚀↑:{$upload}GB,↓:{$download}GB,TOT:{$totalTraffic}GB💡Expires:{$expiredDate}\r\n";
 
         foreach ($this->servers as $server) {
+            if (!empty($server['external'])) {
+                $uri .= Helper::buildUri($user['uuid'], $server);
+                continue;
+            }
             if ($server['type'] === 'vmess' || ($server['type'] === 'v2node' && $server['protocol'] === 'vmess')) {
                 $uri .= self::buildVmess($user['uuid'], $server);
             } else {
@@ -40,6 +44,7 @@ class Shadowrocket
 
     public static function buildVmess($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $userinfo = base64_encode('auto:' . $uuid . '@' . $server['host'] . ':' . $server['port']);
         $config = [
             'tfo' => 1,

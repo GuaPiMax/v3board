@@ -14,7 +14,7 @@ class Clash
     public function __construct($user, $servers)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -97,6 +97,7 @@ class Clash
 
     public static function buildShadowsocks($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $array = [];
         $array['name'] = $server['name'];
         $array['type'] = 'ss';
@@ -124,11 +125,12 @@ class Clash
             }
             $array['plugin-opts'] = $plugin_opts;
         }
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     public static function buildVmess($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $array = [];
         $array['name'] = $server['name'];
         $array['type'] = 'vmess';
@@ -172,17 +174,18 @@ class Clash
             if (isset($grpcSettings['serviceName'])) $array['grpc-opts']['grpc-service-name'] = $grpcSettings['serviceName'];
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     public static function buildTrojan($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [];
         $array['name'] = $server['name'];
         $array['type'] = 'trojan';
         $array['server'] = $server['host'];
         $array['port'] = $server['port'];
-        $array['password'] = $password;
+        $array['password'] = $server['external_password'] ?? $password;
         $array['udp'] = true;
         if(isset($server['network']) && in_array($server['network'], ["grpc", "ws"])){
             $array['network'] = $server['network'];
@@ -202,7 +205,7 @@ class Clash
         };
         $array['sni'] = $server['server_name'] ?? (($server['tls_settings'] ?? [])['server_name'] ?? '');
         $array['skip-cert-verify'] = ((int)(($server['tls_settings'] ?? [])['allow_insecure'] ?? ($server['allow_insecure'] ?? 0))) == 1 ? true : false;
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     private function isMatch($exp, $str)

@@ -13,7 +13,7 @@ class SingboxOld
     public function __construct($user, $servers, array $options = null)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -97,7 +97,8 @@ class SingboxOld
 
     protected function buildShadowsocks($password, $server)
     {
-        if (strpos($server['cipher'], '2022-blake3') !== false) {
+        $password = $server['external_credential'] ?? $password;
+        if (empty($server['external']) && strpos($server['cipher'], '2022-blake3') !== false) {
             $length = $server['cipher'] === '2022-blake3-aes-128-gcm' ? 16 : 32;
             $serverKey = Helper::getServerKey($server['created_at'], $length);
             $userKey = Helper::uuidToBase64($password, $length);
@@ -109,7 +110,7 @@ class SingboxOld
         $array['server'] = $server['host'];
         $array['server_port'] = $server['port'];
         $array['method'] = $server['cipher'];
-        $array['password'] = $password;
+        $array['password'] = $server['external_password'] ?? $password;
         if (isset($server['obfs']) && $server['obfs'] === 'http') {
             $array['plugin'] = 'obfs-local';
             $plugin_opts_parts = [];
@@ -131,12 +132,13 @@ class SingboxOld
 
             $array['plugin_opts'] = implode(';', $plugin_opts_parts);
         }
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
 
     protected function buildVmess($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $array = [];
         $array['tag'] = $server['name'];
         $array['type'] = 'vmess';
@@ -175,11 +177,12 @@ class SingboxOld
             if (isset($grpcSettings['serviceName'])) $array['transport']['service_name'] = $grpcSettings['serviceName'];
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     protected function buildVless($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [
             "type" => "vless",
             "tag" => $server['name'],
@@ -239,17 +242,18 @@ class SingboxOld
             }
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     protected function buildTrojan($password, $server) 
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [];
         $array['tag'] = $server['name'];
         $array['type'] = 'trojan';
         $array['server'] = $server['host'];
         $array['server_port'] = $server['port'];
-        $array['password'] = $password;
+        $array['password'] = $server['external_password'] ?? $password;
 
         $tlsSettings = $server['tls_settings'] ?? [];
         $array['tls'] = [
@@ -275,18 +279,19 @@ class SingboxOld
             }
         };
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     protected function buildTuic($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $array = [];
         $array['tag'] = $server['name'];
         $array['type'] = 'tuic';
         $array['server'] = $server['host'];
         $array['server_port'] = $server['port'];
         $array['uuid'] = $password;
-        $array['password'] = $password;
+        $array['password'] = $server['external_password'] ?? $password;
         $array['congestion_control'] = $server['congestion_control'] ?? 'cubic';
         $array['udp_relay_mode'] = $server['udp_relay_mode'] ?? 'native';
         $array['zero_rtt_handshake'] = $server['zero_rtt_handshake'] ? true : false;
@@ -300,11 +305,12 @@ class SingboxOld
         ];
         $array['tls']['server_name'] = $server['server_name'] ?? ($tlsSettings['server_name'] ?? '');
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     protected function buildHysteria($password, $server, $user)
     {
+        $password = $server['external_credential'] ?? $password;
         $parts = explode(",",$server['port']);
         $firstPart = $parts[0];
         if (strpos($firstPart, '-') !== false) {
@@ -337,7 +343,7 @@ class SingboxOld
             $array['disable_mtu_discovery'] = true;
 
         } elseif ($server['version'] == 2) {
-            $array['password'] = $password;
+            $array['password'] = $server['external_password'] ?? $password;
             $array['tag'] = $server['name'];
             $array['type'] = 'hysteria2';
 
@@ -347,11 +353,12 @@ class SingboxOld
             }
         }
 
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 
     protected function buildHysteria2($password, $server, $user)
     {
+        $password = $server['external_credential'] ?? $password;
         $parts = explode(",",$server['port']);
         $firstPart = $parts[0];
         if (strpos($firstPart, '-') !== false) {
@@ -369,7 +376,7 @@ class SingboxOld
                 'insecure' => ($tlsSettings['allow_insecure'] ?? 0) == 1 ? true : false,
                 'server_name' => $tlsSettings['server_name'] ?? ''
             ],
-            'password' => $password,
+            'password' => $server['external_password'] ?? $password,
             'tag' => $server['name'],
             'type' => 'hysteria2'
         ];
@@ -377,6 +384,6 @@ class SingboxOld
             $array['obfs']['type'] = $server['obfs'];
             $array['obfs']['password'] = $server['obfs_password'];
         }
-        return $array;
+        return \App\Services\ExternalSubscription\Output::finish($array, $server, static::class);
     }
 }

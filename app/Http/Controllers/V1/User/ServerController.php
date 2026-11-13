@@ -22,6 +22,9 @@ class ServerController extends Controller
         // 无论用户是否可用，都返回节点列表
         // 但根据用户订阅状态决定是否返回真实地址
         $servers = $serverService->getServers($user, $userService->isAvailable($user));
+        if (!\App\Services\InsiderGuardService::isRestricted((int)$user->id)) {
+            $servers = array_merge($servers, app(\App\Services\ExternalSubscription\Subscriptions::class)->metadata($user));
+        }
         
         $eTag = sha1(json_encode(array_column($servers, 'cache_key')));
         if (strpos($request->header('If-None-Match'), $eTag) !== false ) {

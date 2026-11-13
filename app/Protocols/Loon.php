@@ -13,7 +13,7 @@ class Loon
     public function __construct($user, $servers)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -48,11 +48,12 @@ class Loon
 
     public static function buildShadowsocks($password, $server)
     {
-        if ($server['cipher'] === '2022-blake3-aes-128-gcm') {
+        $password = $server['external_credential'] ?? $password;
+        if (empty($server['external']) && $server['cipher'] === '2022-blake3-aes-128-gcm') {
             $serverKey = Helper::getServerKey($server['created_at'], 16);
             $userKey = Helper::uuidToBase64($password, 16);
             $password = "{$serverKey}:{$userKey}";
-        } elseif ($server['cipher'] === '2022-blake3-aes-256-gcm') {
+        } elseif (empty($server['external']) && $server['cipher'] === '2022-blake3-aes-256-gcm') {
             $serverKey = Helper::getServerKey($server['created_at'], 32);
             $userKey = Helper::uuidToBase64($password, 32);
             $password = "{$serverKey}:{$userKey}";
@@ -84,6 +85,7 @@ class Loon
 
     public static function buildVmess($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $networkSettings = $server['networkSettings'] ?? [];
         $config = [
             "{$server['name']}=vmess",
@@ -136,6 +138,7 @@ class Loon
 
     public static function buildVless($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         $config = [
             "{$server['name']}=vless",
             "{$server['host']}",
@@ -200,6 +203,7 @@ class Loon
     
     public static function buildTrojan($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $config = [
             "{$server['name']}=trojan",
             "{$server['host']}",
@@ -230,6 +234,7 @@ class Loon
     
     public static function buildHysteria($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
 
         $parts = explode(",",$server['port']);
         $firstPart = $parts[0];
@@ -263,6 +268,7 @@ class Loon
 
     public static function buildAnytls($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $config = [
             "{$server['name']}=anytls",
             "{$server['host']}",

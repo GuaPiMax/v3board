@@ -11,7 +11,7 @@ class Shadowsocks
     public function __construct($user, $servers)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -51,7 +51,7 @@ class Shadowsocks
             "remarks" => $server['name'],
             "server" => $server['host'],
             "server_port" => $server['port'],
-            "password" => $user['uuid'],
+            "password" => $server['external_credential'] ?? $user['uuid'],
             "method" => $server['cipher']
         ];
         return $config;

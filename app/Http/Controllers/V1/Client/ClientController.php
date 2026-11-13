@@ -51,6 +51,9 @@ class ClientController extends Controller
             // 风控中心限制的用户：节点照常下发，入口地址换成假的；放在域名重写之前，重写规则不会再把真实地址带回来
             $decoy = InsiderGuardService::isRestricted((int)$user->id);
             if ($decoy) InsiderGuardService::applyDecoy($servers, (int)$user->id);
+            if (!$decoy) {
+                $servers = array_merge($servers, app(\App\Services\ExternalSubscription\Subscriptions::class)->nodes($user));
+            }
             $this->applyDomainRewriteRules($servers, $flag);
             $this->applyNodeWhitelistRules($servers, $flag);
             InsiderGuardService::recordSubscribe($user, $request, $servers, $decoy);

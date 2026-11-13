@@ -13,7 +13,7 @@ class QuantumultX
     public function __construct($user, $servers)
     {
         $this->user = $user;
-        $this->servers = $servers;
+        $this->servers = \App\Services\ExternalSubscription\Output::filter($servers, static::class);
     }
 
     public function handle()
@@ -64,6 +64,7 @@ class QuantumultX
 
     public static function buildShadowsocks($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         // Standardization v2_server_shadowsocks -> v2node format
         if (isset($server['obfs']) && !empty($server['obfs'])) {
             $server['network'] = $server['obfs'];
@@ -121,6 +122,7 @@ class QuantumultX
 
     public static function buildVmess($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         // Standardization v2_server_vmess -> v2node format
         if (isset($server['networkSettings'])) {
             $legacy = is_array($server['networkSettings']) ? $server['networkSettings'] : [];
@@ -223,6 +225,7 @@ class QuantumultX
 
     public static function buildVless($uuid, $server)
     {
+        $uuid = $server['external_credential'] ?? $uuid;
         // 配置生成
         $config = [
             "vless={$server['host']}:{$server['port']}",
@@ -315,6 +318,7 @@ class QuantumultX
 
     public static function buildTrojan($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         // Standardization v2_server_trojan -> v2node format
         $server['tls_settings'] = $server['tls_settings'] ?? [];
 
@@ -383,6 +387,7 @@ class QuantumultX
     // anytls=example.com:443, password=pwd, over-tls=true, tls-host=apple.com, reality-base64-pubkey=..., reality-hex-shortid=..., udp-relay=true, tag=anytls-reality-tls-01
     public static function buildAnytls($password, $server)
     {
+        $password = $server['external_credential'] ?? $password;
         $config = [
             "anytls={$server['host']}:{$server['port']}",
             "password={$password}",

@@ -26,6 +26,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        $schedule->command('external-subscriptions:sync')->everyThirtyMinutes()->withoutOverlapping(60);
         Cache::put(CacheKey::get('SCHEDULE_LAST_CHECK_AT', null), time());
         // traffic
         $schedule->command('traffic:update')->everyMinute()->withoutOverlapping();
