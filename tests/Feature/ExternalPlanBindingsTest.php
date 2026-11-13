@@ -32,6 +32,8 @@ class ExternalPlanBindingsTest extends TestCase
         Schema::create('v2_order', function (Blueprint $t) { $t->increments('id'); $t->integer('plan_id'); });
         require_once database_path('migrations/2026_11_13_000001_create_external_subscriptions.php');
         (new \CreateExternalSubscriptions)->up();
+        require_once database_path('migrations/2026_11_13_000002_add_external_subscription_node_prefix.php');
+        (new \AddExternalSubscriptionNodePrefix)->up();
         $user = User::create(['email'=>'binding-admin@example.com','password'=>'unused','uuid'=>'binding-test','token'=>'binding-sub','is_admin'=>1]);
         $this->headers = ['authorization'=>(new AuthService($user))->generateAuthData(\Illuminate\Http\Request::create('/'))['auth_data']];
         $path = config('v2board.secure_path', config('v2board.frontend_admin_path', hash('crc32b', config('app.key'))));
@@ -72,6 +74,25 @@ class ExternalPlanBindingsTest extends TestCase
         $this->postJson($this->prefix.'/plan/save', $this->plan(['id'=>$first['id'],'external_subscription_ids'=>[999],'external_binding_token'=>$latest['external_binding_token']]), $this->headers)->assertStatus(422);
         $this->postJson($this->prefix.'/plan/drop', ['id'=>$first['id']], $this->headers)->assertOk();
         $this->assertSame(0, DB::table('v2_external_subscription_plan')->count());
+    }
+
+    public function test_prefix_is_optional_preserves_spaces_and_rejects_control_characters(): void
+    {
+        $path = $this->prefix.'/external-subscription';
+        $data = ['id'=>1,'revision'=>1,'name'=>'Source 1','enabled'=>true,'url'=>'','plan_ids'=>[],'node_prefix'=>'备用 '];
+        $this->postJson($path.'/save', $data, $this->headers)->assertOk();
+        $this->getJson($path.'/fetch', $this->headers)->assertJsonPath('data.0.node_prefix', '备用 ');
+        $data['revision']=2; unset($data['node_prefix']);
+        $this->postJson($path.'/save', $data, $this->headers)->assertOk();
+        $this->assertSame('备用 ', DB::table('v2_external_subscription')->where('id',1)->value('node_prefix'));
+        $data['revision']=3;
+        foreach (["bad\nname", "bad\rname", "bad\tname", "bad\u{2028}name", str_repeat('前',101)] as $bad) {
+            $data['node_prefix']=$bad;
+            $this->postJson($path.'/save', $data, $this->headers)->assertStatus(422);
+        }
+        $data['node_prefix']='';
+        $this->postJson($path.'/save', $data, $this->headers)->assertOk();
+        $this->assertSame('', DB::table('v2_external_subscription')->where('id',1)->value('node_prefix'));
     }
 
     public function test_old_page_redirects_to_main_admin_and_apis_still_require_auth(): void

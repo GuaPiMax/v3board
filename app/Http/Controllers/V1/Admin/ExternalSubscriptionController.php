@@ -12,7 +12,7 @@ class ExternalSubscriptionController extends Controller
 {
     public function fetch()
     {
-        $rows = DB::table('v2_external_subscription')->orderBy('id')->get(['id','name','enabled','revision','synced_at','attempted_at','status','node_count']);
+        $rows = DB::table('v2_external_subscription')->orderBy('id')->get(['id','name','node_prefix','enabled','revision','synced_at','attempted_at','status','node_count']);
         $bindings = DB::table('v2_external_subscription_plan')->get()->groupBy('subscription_id');
         foreach ($rows as $row) $row->plan_ids = isset($bindings[$row->id]) ? $bindings[$row->id]->pluck('plan_id')->all() : [];
         return ['data' => $rows, 'plans' => DB::table('v2_plan')->orderBy('id')->get(['id','name'])];
@@ -22,6 +22,7 @@ class ExternalSubscriptionController extends Controller
     {
         $data = $request->validate(['id' => 'nullable|integer|min:1', 'revision' => 'nullable|integer|min:1',
             'name' => 'required|string|max:100', 'url' => 'nullable|string|max:4096',
+            'node_prefix' => ['nullable', 'string', 'max:100', 'not_regex:/[\p{C}\x{2028}\x{2029}]/u'],
             'enabled' => 'required|boolean', 'plan_ids' => 'present|array|max:200',
             'plan_ids.*' => 'required|integer|min:1|distinct|exists:v2_plan,id']);
         if (!empty($data['url'])) {
@@ -30,6 +31,8 @@ class ExternalSubscriptionController extends Controller
         }
         return DB::transaction(function () use ($data) {
             $values = ['name' => $data['name'], 'enabled' => $data['enabled'], 'updated_at' => time()];
+            // Old clients may omit the field; only an explicit empty value clears it.
+            if (array_key_exists('node_prefix', $data)) $values['node_prefix'] = $data['node_prefix'] ?? '';
             if (!empty($data['id'])) {
                 $row = DB::table('v2_external_subscription')->where('id', $data['id'])->lockForUpdate()->first();
                 if (!$row) abort(404);

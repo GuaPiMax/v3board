@@ -14,5 +14,6 @@ class TrimStrings extends Middleware
     protected $except = [
         'password',
         'password_confirmation',
+        'node_prefix', // Spaces are intentional separators in third-party node names.
     ];
 }

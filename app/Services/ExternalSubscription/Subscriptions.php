@@ -30,14 +30,14 @@ class Subscriptions
                 catch (\Throwable $e) { continue; }
                 foreach ($nodes as $i => $node) {
                     $node['id'] = -($source->id * 1001 + $i + 1);
-                    $node['name'] = '外部 ' . $source->id . '-' . ($i + 1) . ' | ' . $node['name'];
+                    $node['name'] = ($source->node_prefix ?? '') . $node['name'];
                     $node['updated_at'] = $source->synced_at;
-                    $node['cache_key'] = 'external-' . $source->id . '-' . $source->synced_at . '-' . $i;
+                    $node['cache_key'] = 'external-' . $source->id . '-' . $source->synced_at . '-' . $i . '-' . hash('sha256', $node['name']);
                     $result[] = $node;
-                    if (count($result) >= 3000) return $result;
+                    if (count($result) >= 3000) return Output::uniqueNames($result);
                 }
             }
-            return $result;
+            return Output::uniqueNames($result);
         } catch (\Throwable $e) {
             // Do not let an uninstalled/unavailable extension break native subscriptions.
             return [];

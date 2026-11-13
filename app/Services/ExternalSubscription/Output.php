@@ -3,11 +3,32 @@ namespace App\Services\ExternalSubscription;
 
 class Output
 {
+    /** Keep native names; suffix only colliding external display names. */
+    public static function uniqueNames(array $nodes): array
+    {
+        $used = [];
+        $nextSuffix = [];
+        foreach ($nodes as $node) if (empty($node['external'])) $used[$node['name']] = true;
+        foreach ($nodes as &$node) {
+            if (empty($node['external'])) continue;
+            $base = $node['external_display_name'] ?? $node['name'];
+            $node['external_display_name'] = $base;
+            $name = $base;
+            $suffix = $nextSuffix[$base] ?? 2;
+            while (isset($used[$name])) $name = $base . ' (' . $suffix++ . ')';
+            $nextSuffix[$base] = $suffix;
+            $node['name'] = $name;
+            $used[$name] = true;
+        }
+        unset($node);
+        return $nodes;
+    }
+
     /** A conservative capability gate, applied only to external nodes. */
     public static function filter(array $servers, string $class): array
     {
         $client = substr(strrchr($class, '\\'), 1);
-        return array_values(array_filter($servers, function ($n) use ($client) {
+        return self::uniqueNames(array_values(array_filter($servers, function ($n) use ($client) {
             if (empty($n['external'])) return true;
             $uriClients = ['General','V2rayN','V2rayNG','v2RayTun','Passwall','SSRPlus','SagerNet','Shadowrocket'];
             if ($client === 'SagerNet' && $n['type'] === 'hysteria') return false;
@@ -31,7 +52,7 @@ class Output
             if ($client === 'QuantumultX' && in_array($n['type'], ['tuic','hysteria'], true)) return false;
             if (in_array($client, ['Clash','Stash'], true) && $n['tls'] === 2) return false;
             return true;
-        }));
+        })));
     }
 
     public static function finish(array $config, array $server, string $class): array

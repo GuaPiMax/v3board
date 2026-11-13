@@ -1,5 +1,5 @@
 source: frontend/admin (in this repository)
 upstream: https://github.com/codeman857/v2board-admin.git
 upstream-commit: 10d112f4f9ee624c1db00e8453c7c5140ca797ed
-source-sha256: 469429e86e9281d222201a420ebc5bc6a33942e0720a3f335653367bb418c8df
-built: 2026-11-13T12:47:33.932Z
+source-sha256: 7e11fc2d57a4ccf3dd3816944a35e98d2a4599ab03eb8ff0ba9c2d5351d7cab6
+built: 2026-11-13T13:02:17.731Z

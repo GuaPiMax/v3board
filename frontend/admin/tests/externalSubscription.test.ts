@@ -24,7 +24,15 @@ beforeEach(() => {
 })
 
 it('source save reuses admin authorization and preserves an empty binding array and blank retained URL', async () => {
-  await saveExternalSubscription({ id: 3, revision: 2, name: 'Example', url: '', enabled: false, plan_ids: [] })
+  await saveExternalSubscription({
+    id: 3,
+    revision: 2,
+    name: 'Example',
+    node_prefix: '备用 ',
+    url: '',
+    enabled: false,
+    plan_ids: [],
+  })
   const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
   expect(url).toBe('http://api.test/api/v1/admin-test/external-subscription/save')
   expect(new Headers(init.headers).get('authorization')).toBe('existing-admin-token')
@@ -33,6 +41,7 @@ it('source save reuses admin authorization and preserves an empty binding array 
     id: 3,
     revision: 2,
     name: 'Example',
+    node_prefix: '备用 ',
     url: '',
     enabled: false,
     plan_ids: [],

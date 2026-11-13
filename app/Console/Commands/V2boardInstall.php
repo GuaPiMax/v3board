@@ -40,7 +40,7 @@ class V2boardInstall extends Command
             $sql = file_get_contents(base_path('database/install.sql'));
             if (!$sql) throw new \RuntimeException('安装 SQL 不存在');
             DB::unprepared($sql);
-            if ($this->call('migrate', ['--path' => 'database/migrations/2026_11_13_000001_create_external_subscriptions.php', '--force' => true]) !== 0) throw new \RuntimeException('第三方订阅数据表初始化失败');
+            if ($this->call('migrate', ['--path' => ['database/migrations/2026_11_13_000001_create_external_subscriptions.php', 'database/migrations/2026_11_13_000002_add_external_subscription_node_prefix.php'], '--force' => true]) !== 0) throw new \RuntimeException('第三方订阅数据表初始化失败');
             $password = Helper::guid(false);
             $user = new User();
             $user->email = $email;

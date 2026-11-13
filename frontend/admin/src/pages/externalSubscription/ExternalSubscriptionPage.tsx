@@ -37,8 +37,14 @@ export default function ExternalSubscriptionPage() {
     form.resetFields()
     form.setFieldsValue(
       source
-        ? { name: source.name, enabled: Boolean(source.enabled), plan_ids: source.plan_ids, url: '' }
-        : { name: '', enabled: true, plan_ids: [], url: '' },
+        ? {
+            name: source.name,
+            node_prefix: source.node_prefix ?? '',
+            enabled: Boolean(source.enabled),
+            plan_ids: source.plan_ids,
+            url: '',
+          }
+        : { name: '', node_prefix: '', enabled: true, plan_ids: [], url: '' },
     )
     setEditing(source)
   }
@@ -71,6 +77,17 @@ export default function ExternalSubscriptionPage() {
   }
   const columns: TableColumnsType<ExternalSubscription> = [
     { title: '名称', dataIndex: 'name', key: 'name' },
+    {
+      title: '节点前缀',
+      dataIndex: 'node_prefix',
+      key: 'prefix',
+      render: (prefix: string) =>
+        prefix ? (
+          <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{prefix}</span>
+        ) : (
+          <Typography.Text type="secondary">无</Typography.Text>
+        ),
+    },
     {
       title: '状态',
       key: 'enabled',
@@ -206,6 +223,14 @@ export default function ExternalSubscriptionPage() {
             rules={[{ required: true, whitespace: true, message: '请输入名称' }, { max: 100 }]}
           >
             <Input maxLength={100} />
+          </Form.Item>
+          <Form.Item
+            label="节点名称前缀"
+            name="node_prefix"
+            rules={[{ max: 100 }]}
+            extra="直接拼接原节点名，例如「备用」＋「香港A」＝「备用香港A」。留空保留原名；需要分隔时可填写空格。重名时追加 (2)、(3) 等序号。保存后下次获取订阅生效，无需重新同步。"
+          >
+            <Input maxLength={100} placeholder="例如：备用" />
           </Form.Item>
           <Form.Item
             label="订阅链接"
