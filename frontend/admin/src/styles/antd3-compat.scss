@@ -1,0 +1,935 @@
+// antd 6 → antd 3 观感兼容层：token 表达不了的部分在这里补齐（按原版计算样式逐项对齐）。
+// 除第一条外只在 legacy 界面预设（默认值）下生效；:where() 限定作用域，不改变选择器优先级。
+// 皮肤下这个文件不生效；其中皮肤也需要的几条（页面按原版 DOM 写所依赖的 antd 3 默认值）
+// 写成 _antd3-dom.scss 的 mixin，这里在原来的位置引入，skins/index.scss 也引入。
+
+// <App> 的包裹层不要改变 Dashmix 区域的字体与颜色（各预设都需要）
+#root > .ant-app {
+  height: 100%;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  font-family: inherit;
+}
+
+:where(html[data-v2b-ui='legacy']) {
+  // antd 3 组件不设置 font-family，表格里的按钮、标签等会继承 .ant-table 的 menlo 等宽字体；
+  // antd 6 在每个组件根节点都设置了字体，这里恢复为继承
+  .ant-table [class^='ant-'],
+  .ant-table [class*=' ant-'] {
+    font-family: inherit;
+  }
+
+  // Modal：antd 3 的 header / body / footer 结构（带分割线），padding 由 v2board 覆盖为 15px
+  .ant-modal,
+  .ant-modal-wrap.ant-modal-centered .ant-modal {
+    // antd 3 的 padding-bottom 在居中弹窗里同样保留（整体上移 12px）
+    padding-bottom: 24px;
+  }
+  // antd 6 把 .ant-modal-content 改名为 .ant-modal-container
+  .ant-modal .ant-modal-container {
+    padding: 0;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .ant-modal .ant-modal-header {
+    margin-bottom: 0;
+    padding: 15px;
+    border-bottom: 1px solid #e8e8e8;
+    border-radius: 4px 4px 0 0;
+  }
+  .ant-modal .ant-modal-title {
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 500;
+  }
+  .ant-modal .ant-modal-body {
+    padding: 15px;
+  }
+  .ant-modal .ant-modal-footer {
+    margin-top: 0;
+    padding: 10px 16px;
+    border-top: 1px solid #e8e8e8;
+    border-radius: 0 0 4px 4px;
+  }
+  .ant-modal .ant-modal-close {
+    top: 0;
+    inset-inline-end: 0;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border-radius: 0;
+  }
+  .ant-modal .ant-modal-close:hover {
+    background: transparent;
+  }
+  .ant-modal .ant-modal-close-x {
+    display: block;
+    width: 56px;
+    height: 56px;
+    font-size: 16px;
+    line-height: 56px;
+    text-align: center;
+  }
+
+  // 图标：antd 3 是 inline-block（antd 6 为 inline-flex）。两者在文字行里的基线不同：
+  // inline-flex 以 svg 底边为基线，表格里的图标会上移约 3px 并把行高撑高 0.4px（在 flex 容器里两者都会被块级化，没有区别）
+  .anticon {
+    display: inline-block;
+  }
+
+
+  // 等宽数字：antd 3 每个组件根节点都设置了 tnum（reset-component），antd 6 去掉了；
+  // 其他元素会从 body 继承（antd3-base），只有 input / textarea 不继承字体特性，需要单独补上。
+  // 日期选择框里的 input 没有类名：antd 3 的单个日期框输入框带 .ant-input（等宽数字），日期范围的两个输入框不带（比例数字）
+  :is(input, textarea)[class*='ant-'],
+  .ant-picker:not(.ant-picker-range) input {
+    font-variant: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  // 输入框：antd 3 是 padding 4px + 固定高度 32px（antd 6 用 4.5px 的 padding 撑出 32px，文字会下移半像素）
+  input.ant-input {
+    height: 32px;
+  }
+  // 多行输入框：antd 6 在触屏设备上去掉了右下角的拖动把手（resize: none），antd 3 始终可以上下拖动
+  textarea.ant-input {
+    resize: vertical;
+  }
+  .ant-input-affix-wrapper input.ant-input {
+    height: auto;
+  }
+  // 带前后缀的输入框（支付方式的「百分比手续费」）：antd 3 由里面的输入框撑出 32px、文字在 22px 的内容区里居中；
+  // antd 6 的外框是 21px 行高 + 内边距 = 31px
+  .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-lg):not(.ant-input-affix-wrapper-sm):has(> input.ant-input) {
+    height: 32px;
+  }
+  // 前后缀：antd 3 绝对定位在距外框 12px、垂直中线上（行高为 0，文字以中线为中心绘制），输入框在这一侧固定留出 30px；
+  // antd 6 在弹性布局里按前后缀的实际宽度留空（窄屏下占位文字的省略位置不同），文字按 21px 行高排版（差半像素）
+  .ant-input-affix-wrapper {
+    position: relative;
+  }
+  .ant-input-affix-wrapper > .ant-input-prefix,
+  .ant-input-affix-wrapper > .ant-input-suffix {
+    position: absolute;
+    top: 50%;
+    margin: 0;
+    line-height: 0;
+    transform: translateY(-50%);
+  }
+  .ant-input-affix-wrapper > .ant-input-prefix {
+    left: 11px;
+  }
+  .ant-input-affix-wrapper > .ant-input-suffix {
+    right: 11px;
+  }
+  .ant-input-affix-wrapper:has(> .ant-input-prefix) > input.ant-input {
+    padding-left: 19px;
+  }
+  .ant-input-affix-wrapper:has(> .ant-input-suffix) > input.ant-input {
+    padding-right: 19px;
+  }
+  // 大号输入框（系统配置「节点」的轮询间隔）：antd 3 固定高度 40px、上下内边距 6px（antd 6 为 7px）；
+  // 后置区不跟着放大字号，仍是 14px（antd 6 为 16px）
+  input.ant-input.ant-input-lg {
+    height: 40px;
+    padding-block: 6px;
+  }
+  .ant-input-group-wrapper-lg .ant-input-group-addon {
+    font-size: 14px;
+  }
+
+  // 空按钮（见 _antd3-dom.scss，两种预设都需要）
+  @include empty-button;
+
+  // 只包含一个图标（作为子元素，而不是 icon 属性）的按钮，如节点管理的「+」：antd 3 是行内块，基线在按钮里的文字行上；
+  // antd 6 是 inline-flex，基线落在图标底边，按钮会下移约 2px
+  .ant-btn:has(> .anticon:only-child) {
+    display: inline-block;
+  }
+
+  // 加载中的按钮、按钮组的基线，加载中遮罩的字体（见 _antd3-dom.scss，两种预设都需要）
+  @include button-baseline;
+
+  @include spin-inherit;
+
+  // 按钮：antd 3 的主按钮文字带轻微阴影
+  .ant-btn.ant-btn-primary:not(:disabled) {
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
+  }
+  // 主按钮背景写在静态样式里（暗黑模式，见 _antd3-dom.scss，两种预设都需要）
+  @include primary-button-background;
+  // 危险按钮（原版 type="danger"，如过滤器的「重置」）：antd 3 用红色板第 5 级（#ff4d4f），antd 6 用 colorError（#f5222d）
+  .ant-btn.ant-btn-variant-solid.ant-btn-color-dangerous:not(:disabled) {
+    background: #ff4d4f;
+    border-color: #ff4d4f;
+  }
+  .ant-btn.ant-btn-variant-solid.ant-btn-color-dangerous:not(:disabled):is(:hover, :focus) {
+    background: #ff7875;
+    border-color: #ff7875;
+  }
+  .ant-btn.ant-btn-variant-solid.ant-btn-color-dangerous:not(:disabled):active {
+    background: #d9363e;
+    border-color: #d9363e;
+  }
+
+  // Drawer：antd 3 的抽屉不设文字颜色，内容（如表单标签）继承 body 的 Dashmix 正文色 #495057；antd 6 设为 colorText
+  .ant-drawer {
+    color: inherit;
+  }
+  // Drawer：header / body padding 15px（v2board 覆盖值）
+  .ant-drawer .ant-drawer-header {
+    padding: 15px;
+  }
+  // 标题：antd 3 行高 22px、颜色 0.85（antd 6 为 24px、正文色，整个抽屉内容会下移 2px）
+  .ant-drawer .ant-drawer-title {
+    color: rgba(0, 0, 0, 0.85);
+    line-height: 22px;
+  }
+  // 关闭按钮：antd 3 绝对定位在右上角，56×56，悬停只变色（antd 6 是标题旁 24px 的按钮，悬停有灰色背景）
+  .ant-drawer .ant-drawer-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+    display: block;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    line-height: 56px;
+    text-align: center;
+    border-radius: 0;
+  }
+  .ant-drawer .ant-drawer-close:hover {
+    color: rgba(0, 0, 0, 0.75);
+    background: transparent;
+  }
+  .ant-drawer .ant-drawer-body {
+    padding: 15px;
+    margin-bottom: 50px;
+  }
+  // 滚动：antd 3 的滚动容器是包住标题与内容的 .ant-drawer-wrapper-body，标题随内容一起滚走，
+  // 底部的 .v2board-drawer-action 相对外层定位、固定在底部；antd 6 只有内容区滚动、标题固定不动。
+  // 这里让 .ant-drawer-section 成为滚动容器、内容区不再单独滚动（操作栏的定位容器仍在外层，保持固定）；
+  // 关闭按钮相对标题定位，随标题一起滚动
+  .ant-drawer .ant-drawer-section {
+    overflow: auto;
+  }
+  .ant-drawer .ant-drawer-section > .ant-drawer-body {
+    flex: none;
+    overflow: visible;
+  }
+  .ant-drawer .ant-drawer-header {
+    position: relative;
+  }
+
+  // 全局提示（message）：antd 3 的图标与文字在同一行里（图标 16px、相对下移 1px、右边距 8px，与文字按基线对齐）；
+  // antd 6.6 是 flex 垂直居中，图标高 0.6px。距顶部 16px 在 <App message={{ top: 16 }}> 里设置
+  .ant-message .ant-message-notice-wrapper {
+    display: block;
+  }
+  .ant-message .ant-message-notice-icon {
+    display: inline;
+    margin-inline-end: 8px;
+  }
+  .ant-message .ant-message-notice-icon > .anticon {
+    position: relative;
+    top: 1px;
+  }
+  // 文字颜色为正文色 rgba(0, 0, 0, 0.65)（antd 6.6 的全局提示沿用通知的标题色 0.85）
+  .ant-message .ant-message-notice-title {
+    display: inline;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  // 通知（接口报错「请求失败」等）：antd 3 内边距 16px 24px，图标绝对定位（左移 4px），标题 / 描述缩进 48px、间距 4px，
+  // 关闭按钮在 top 16px / right 22px、没有背景与内边距；antd 6.6 是 flex 布局（内边距 20px，间距 12px / 8px）
+  .ant-notification .ant-notification-notice {
+    padding: 16px 24px;
+  }
+  .ant-notification .ant-notification-notice-wrapper {
+    display: block;
+  }
+  .ant-notification .ant-notification-notice-icon {
+    position: absolute;
+    margin-inline-start: 4px;
+    line-height: 24px;
+  }
+  // antd 3 的图标本身就是定位元素（行高 24px，svg 在行框里 middle 对齐）；antd 6 的图标在容器里且行高为 0
+  .ant-notification .ant-notification-notice-icon > .anticon {
+    line-height: 24px;
+    vertical-align: top;
+  }
+  .ant-notification .ant-notification-notice-section {
+    display: block;
+    margin-inline-start: 48px;
+  }
+  .ant-notification .ant-notification-notice-title {
+    margin-bottom: 4px;
+  }
+  .ant-notification .ant-notification-notice-close {
+    display: block;
+    top: 16px;
+    inset-inline-end: 22px;
+    width: auto;
+    height: auto;
+    padding: 0;
+    line-height: 21px;
+    background: transparent;
+    border-radius: 0;
+  }
+  .ant-notification .ant-notification-notice-close:hover {
+    color: rgba(0, 0, 0, 0.67);
+    background: transparent;
+  }
+  // 手机上（原版 umi.css 的 max-width: 768px 规则）：通知贴着屏幕左上角、直角，宽度仍是 384px。
+  // antd 6.6 的通知容器铺满屏幕并有 24px 内边距，原规则（v2board.scss）只作用在容器上，这里按新结构补上同样的效果
+  @media (max-width: 768px) {
+    .ant-notification.ant-notification-topRight {
+      padding: 0;
+    }
+    .ant-notification .ant-notification-notice {
+      inset-inline: 0 auto;
+      width: 384px;
+      max-width: none;
+      border-radius: 0;
+    }
+  }
+
+  // 文字提示（Tooltip）：antd 6 用 filter: drop-shadow 画阴影（连箭头一起），半透明背景下阴影会透出来，整个提示框变深；
+  // antd 3 是内层的 box-shadow（只画在外面）
+  .ant-tooltip {
+    filter: none;
+  }
+  .ant-tooltip .ant-tooltip-container {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  // 最大宽度：antd 3 为 250px，左右方向的提示把 8px 的箭头空间算在里面（内容最宽 242px，如用户管理的 Tips 提示），
+  // antd 6 的 250px 不含箭头
+  .ant-tooltip:is([class*='ant-tooltip-placement-left'], [class*='ant-tooltip-placement-right']) {
+    max-width: 242px;
+  }
+
+  // Tag 的默认右边距与文字对齐（见 _antd3-dom.scss，两种预设都需要）
+  @include tag-defaults;
+  // 预设色标签（如用户管理的「正常 / 封禁」、到期时间）：antd 3 文字用色板第 6 级（antd 6 为第 7 级，更深），
+  // 蓝色系沿用 antd 3 的 #1890ff 色板（antd 6 为 #1677ff）。取值来自原版 antd 3 样式
+  $legacy-tag-colors: (
+    'blue': (#1890ff, #e6f7ff, #91d5ff),
+    'cyan': (#13c2c2, #e6fffb, #87e8de),
+    'geekblue': (#2f54eb, #f0f5ff, #adc6ff),
+    'gold': (#faad14, #fffbe6, #ffe58f),
+    'green': (#52c41a, #f6ffed, #b7eb8f),
+    'lime': (#a0d911, #fcffe6, #eaff8f),
+    'magenta': (#eb2f96, #fff0f6, #ffadd2),
+    'orange': (#fa8c16, #fff7e6, #ffd591),
+    'pink': (#eb2f96, #fff0f6, #ffadd2),
+    'purple': (#722ed1, #f9f0ff, #d3adf7),
+    'red': (#f5222d, #fff1f0, #ffa39e),
+    'volcano': (#fa541c, #fff2e8, #ffbb96),
+    'yellow': (#fadb14, #feffe6, #fffb8f),
+  );
+  @each $name, $colors in $legacy-tag-colors {
+    .ant-tag.ant-tag-outlined.ant-tag-#{$name}:not(.ant-tag-disabled, .ant-tag-solid) {
+      color: nth($colors, 1);
+      background-color: nth($colors, 2);
+      border-color: nth($colors, 3);
+    }
+  }
+
+  // 展开的单选框：antd 3 选中值不变淡（antd 6 降到 0.25 透明度），箭头翻转朝上
+  .ant-select.ant-select-single.ant-select-open:not(.ant-select-show-search) .ant-select-content.ant-select-content-has-value {
+    opacity: 1;
+  }
+  .ant-select .ant-select-suffix > .anticon-down svg {
+    transition: transform 0.3s;
+  }
+  .ant-select.ant-select-open .ant-select-suffix > .anticon-down svg {
+    transform: rotate(180deg);
+  }
+  // 下拉选项列表：antd 3 的上下 4px 内边距在可滚动的列表上（底部内边距里仍能看到下一项），左右为 0，选项是直角的整行；
+  // 列表最大高度 250px（含内边距，antd 6 为 256px 加面板内边距）。选项列表已关闭虚拟滚动（ConfigProvider virtual），
+  // 这里把内边距移到列表上，并覆盖列表的内联最大高度
+  .ant-select-dropdown {
+    padding: 0;
+  }
+  .ant-select-dropdown .ant-select-dropdown-list-holder {
+    max-height: 250px !important;
+    padding: 4px 0;
+  }
+  // 选项是直角，只有第一项的上方和最后一项的下方带 4px 圆角（原版主题文件的规则）
+  .ant-select-dropdown .ant-select-item {
+    border-radius: 0;
+  }
+  .ant-select-dropdown .ant-select-item:first-child {
+    border-radius: 4px 4px 0 0;
+  }
+  .ant-select-dropdown .ant-select-item:last-child {
+    border-radius: 0 0 4px 4px;
+  }
+  // 分页的每页条数选择：下拉挂在分页节点里，antd 3 分页的 ul 重置规则把选项列表的上下内边距清零
+  .ant-pagination .ant-select-dropdown .ant-select-dropdown-list-holder {
+    padding: 0;
+  }
+  // 条数是数字的表格（用户、优惠券、礼品卡，见 usePagedList 的 PAGINATION_PROPS）：原版选择框的值是字符串，
+  // 匹配不到选项，没有选项处于选中状态（不加粗、没有灰色背景）
+  .ant-select-dropdown.v2b-size-changer-unmatched .ant-select-item.ant-select-item-option-selected {
+    font-weight: 400;
+  }
+  .ant-select-dropdown.v2b-size-changer-unmatched .ant-select-item.ant-select-item-option-selected:not(.ant-select-item-option-active) {
+    background: transparent;
+  }
+
+  // 单选框的选中值 / 占位文字：antd 3 行高为选择框内高（默认 30px），antd 6 为 21px 加 4.5px 上下内边距，文字会下移半像素
+  .ant-select-single {
+    padding-block: 0;
+  }
+  .ant-select-single .ant-select-content {
+    line-height: 30px;
+    // antd 3 的选中值左浮动，不继承外层（例如输入框前置区）的 text-align: center
+    text-align: start;
+  }
+  .ant-select-single.ant-select-sm .ant-select-content {
+    line-height: 22px;
+  }
+  .ant-select-single.ant-select-lg .ant-select-content {
+    line-height: 38px;
+  }
+
+  // 单选框右侧：antd 3 的箭头绝对定位（默认 / 大号距内边 11px，小号 8px），文字区右边距固定 24px；
+  // antd 6 是 flex 布局（文字与箭头间距 6px，小号左右内边距 7px）。换算成相同的箭头位置与自动宽度
+  .ant-select-single .ant-select-content {
+    margin-inline-end: 1px;
+  }
+  .ant-select-single.ant-select-sm {
+    padding-inline-end: 8px;
+  }
+  .ant-select-single.ant-select-sm .ant-select-content {
+    margin-inline-end: 4px;
+  }
+
+  // 输入框禁用时，antd 6 把前置 / 后置区也改成禁用背景（#f5f5f5），antd 3 保持 #fafafa（如礼品卡「重置套餐流量」）
+  .ant-input-group-wrapper-outlined.ant-input-group-wrapper-disabled .ant-input-group-addon {
+    background-color: #fafafa;
+  }
+  // 输入框前置 / 后置区：antd 3 行高 1.5（antd 6 为 1），文字垂直位置差 0.5px
+  .ant-input-group .ant-input-group-addon {
+    line-height: 1.5;
+  }
+  // 输入框前置 / 后置区里的选择框：antd 3 的选择框透明（露出前置区的上下边框），选中值与箭头距外框 11px，
+  // 并因行内块的基线对齐整体低 0.5px；antd 6 的选择框背景继承前置区的灰色，会盖住前置区的边框
+  // （选择器与 antd 6 重置前置区选择框的规则同优先级）
+  .ant-input-group
+    .ant-input-group-addon
+    .ant-select.ant-select-single:not(.ant-select-customize-input):not(.ant-pagination-size-changer) {
+    position: relative;
+    top: 0.5px;
+    padding-inline: 10px;
+    background-color: transparent;
+  }
+
+  // 日期范围选择框：antd 3 两个输入框各占 44% 宽、文字居中，中间是 10px 宽的灰色「~」，
+  // 日历图标绝对定位在距右 12px 处（颜色同正文）；antd 6 为 flex 等分、左对齐，并有聚焦指示条
+  .ant-picker-range {
+    // antd 3 的输入框固定高度（默认 32px），antd 6 由内容撑开
+    height: 32px;
+    padding-block: 4px;
+  }
+  .ant-picker-range .ant-picker-input {
+    flex: 0 0 44%;
+  }
+  .ant-picker-range .ant-picker-input > input {
+    box-sizing: border-box;
+    // antd 3：height 99%（内容区 22px）+ 浏览器默认的 1px 2px 内边距
+    height: 21.78px;
+    padding: 1px 2px;
+    text-align: center;
+  }
+  .ant-picker-range .ant-picker-range-separator {
+    align-self: stretch;
+    min-width: 10px;
+    padding: 0;
+    line-height: 21px;
+    text-align: center;
+  }
+  .ant-picker-range .ant-picker-separator {
+    width: auto;
+    height: auto;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 14px;
+  }
+  .ant-picker-range .ant-picker-active-bar {
+    display: none;
+  }
+  .ant-picker .ant-picker-suffix {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    margin: -7px 0 0;
+    color: rgba(0, 0, 0, 0.65);
+  }
+  // antd 3 的日历图标是行高 1 的块，svg 在行框里 middle 对齐（比 antd 6 低 1.3px）
+  .ant-picker .ant-picker-suffix > .anticon {
+    display: block;
+    line-height: 1;
+  }
+  // 单个日期选择框（如用户的到期时间）：antd 3 同样是 32px 高、上下内边距 4px 的输入框（antd 6 为 4.5px，文字下移半像素），
+  // 图标距右 12px。antd 6 的图标在内层输入区里定位，内层的右边正好在外框内 12px 处
+  .ant-picker:not(.ant-picker-range) {
+    height: 32px;
+    padding-block: 4px;
+  }
+  .ant-picker:not(.ant-picker-range) .ant-picker-suffix {
+    right: 0;
+  }
+
+  // 下拉菜单（含表格右键菜单）：antd 3 菜单上下内边距 4px、左右为 0，菜单项 5px 12px、行高 22px、无圆角；
+  // antd 6 菜单四周 4px，菜单项有圆角
+  .ant-dropdown .ant-dropdown-menu {
+    padding: 4px 0;
+  }
+  .ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item {
+    padding: 5px 12px;
+    line-height: 22px;
+    border-radius: 0;
+  }
+  // 菜单项开头的图标：antd 3 为 12px（.ant-dropdown-menu-item > .anticon:first-child，右边距被 v2board 覆盖为 0）；
+  // antd 6 把内容包在 .ant-dropdown-menu-title-content 里，原规则匹配不到
+  .ant-dropdown-menu-item > .ant-dropdown-menu-title-content > .anticon:first-child {
+    min-width: 12px;
+    margin-right: 0;
+    font-size: 12px;
+  }
+
+  // 水平分隔线：antd 3 不带文字的是 1px 高、用背景色画线的块；带文字的是 display: table，左右两条线是
+  // table-cell（antd 6 为 flex + rail 元素，三者正好对应 antd 3 的三个单元格，套用同样的样式后位置一致）
+  // antd 3 的 .ant-divider 通用规则 top: -0.06em 对水平分隔线同样生效（整体上移不到 1px）
+  .ant-divider-horizontal {
+    position: relative;
+    top: -0.06em;
+  }
+  .ant-divider-horizontal:not(.ant-divider-with-text) {
+    display: block;
+    height: 1px;
+    border-block-start: 0;
+    background: #e8e8e8;
+  }
+  .ant-divider-horizontal.ant-divider-with-text {
+    display: table;
+    margin: 16px 0;
+    white-space: nowrap;
+    text-align: center;
+    background: transparent;
+  }
+  .ant-divider-horizontal.ant-divider-with-text .ant-divider-rail {
+    position: relative;
+    top: 50%;
+    display: table-cell;
+    width: 50%;
+    border-top: 1px solid #e8e8e8;
+    transform: translateY(50%);
+  }
+  .ant-divider-horizontal.ant-divider-with-text .ant-divider-inner-text {
+    display: inline-block;
+    padding: 0 24px;
+  }
+  // 竖分隔线（如表格里「编辑 | 删除」之间）：antd 3 同样用背景色画（1px 宽的行内块），antd 6 用左边框。亮色下像素相同，
+  // 但 antd 6 的边框颜色是运行时注入样式里的 CSS 变量，暗黑模式下 darkreader 不转换它，竖线仍是浅灰、变得很亮（原版被转成深灰）
+  .ant-divider-vertical {
+    width: 1px;
+    border-inline-start: 0;
+    background: #e8e8e8;
+  }
+
+  // 栅格列在没有对应断点宽度时占满一行（见 _antd3-dom.scss，两种预设都需要）
+  @include grid-col-defaults;
+
+  // 分页（原版表格统一用 size: small）：antd 3 mini 分页的页码之间没有间距（antd 6 为 4px）
+  .ant-pagination.ant-pagination-small {
+    --ant-pagination-item-spacing-actual: 0px;
+  }
+  // 页码的悬停 / 焦点：antd 3 用 :hover 与 :focus（点击后保持），边框与文字变为主题色（当前页为 hover 色），不改背景；
+  // antd 6 只在 :focus-visible 时显示焦点，悬停时加灰色背景。文字颜色要压过 Bootstrap 的 a:not([href]):not([class])
+  .ant-pagination .ant-pagination-item:is(:hover, :focus) {
+    border-color: var(--ant-color-primary);
+  }
+  .ant-pagination .ant-pagination-item:is(:hover, :focus) a {
+    color: var(--ant-color-primary);
+  }
+  .ant-pagination .ant-pagination-item-active:is(:hover, :focus) {
+    border-color: var(--ant-color-primary-hover);
+  }
+  .ant-pagination .ant-pagination-item-active:is(:hover, :focus) a {
+    color: var(--ant-color-primary-hover);
+  }
+  // mini 分页：非当前页的页码始终没有边框与背景
+  .ant-pagination.ant-pagination-small .ant-pagination-item:not(.ant-pagination-item-active) {
+    background: transparent;
+    border-color: transparent;
+  }
+  // 页码与前后翻页、「•••」用 Arial（antd 3 的规则；页码超过两位数时宽度才有差别，如用户管理的「23」）
+  .ant-pagination :is(.ant-pagination-item, .ant-pagination-prev, .ant-pagination-next, .ant-pagination-jump-prev, .ant-pagination-jump-next) {
+    font-family: Arial;
+  }
+  // mini 分页的「•••」：antd 3 的 mini 规则只改了高度，最小宽度仍是 32px（antd 6 为 24px）
+  .ant-pagination.ant-pagination-small :is(.ant-pagination-jump-prev, .ant-pagination-jump-next) {
+    min-width: 32px;
+  }
+  // antd 3 的每页条数选择框右侧有 8px 外边距（整个分页因此左移 8px）
+  .ant-pagination .ant-pagination-options-size-changer {
+    margin-inline-end: 8px;
+  }
+  // 默认尺寸分页（节点管理）：antd 3 的上一页 / 下一页是带边框的方块（antd 6 为无边框的图标按钮），页码之间间距 8px
+  .ant-pagination:not(.ant-pagination-small) {
+    --ant-pagination-item-spacing-actual: 8px;
+  }
+  .ant-pagination:not(.ant-pagination-small) :is(.ant-pagination-prev, .ant-pagination-next) .ant-pagination-item-link {
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: #fff;
+  }
+  .ant-pagination:not(.ant-pagination-small) .ant-pagination-disabled .ant-pagination-item-link {
+    border-color: #d9d9d9;
+    color: rgba(0, 0, 0, 0.25);
+  }
+
+  // 不带文字的状态点与后面的内容隔开 8px（见 _antd3-dom.scss，两种预设都需要）
+  @include badge-dot-gap;
+  // 状态点「默认」（如用户「离线」）：antd 3 为 #d9d9d9，antd 6 用 colorTextPlaceholder（这里是输入框占位符的 #bfbfbf）。
+  //「处理中」由 colorInfo 决定（antdTheme.ts 已设为原版的 #1890ff）
+  .ant-badge .ant-badge-status-dot.ant-badge-status-default {
+    background-color: #d9d9d9;
+  }
+  // 原版主题文件的 .ant-badge 规则把行高覆盖成了 1.5（14px 即 21px）；antd 6 的状态点继承外层行高，
+  // 在移动端节点列表的标题（行高 24px）里会把标题撑高 1px
+  .ant-badge,
+  .ant-badge.ant-badge-status {
+    line-height: 1.5;
+  }
+
+  // 多选框的已选项：antd 3 有 #e8e8e8 边框（antd 6.6 的 multipleItemBorderColor token 未生效）、圆角 2px、
+  // 内边距 0 20px 0 10px，删除图标绝对定位在右侧 4px 处（12px 图标缩小到 10px），列表左侧留 5px；
+  // antd 6 无边框，删除图标跟在文字后面
+  .ant-select-multiple {
+    padding-inline-start: 5px;
+  }
+  // 边框色与圆角由 antd 6 的 CSS 变量控制（小 / 大尺寸会改写圆角，这里统一为 2px）
+  .ant-select.ant-select-multiple {
+    --ant-select-multi-item-border-color: #e8e8e8;
+    --ant-select-multi-item-border-radius: 2px;
+  }
+  // 以下选择器与 antd 6 的 .ant-select-multiple .ant-select-content .ant-select-selection-item 同优先级
+  .ant-select-multiple .ant-select-content .ant-select-selection-item {
+    position: relative;
+    padding: 0 20px 0 10px;
+  }
+  .ant-select-multiple .ant-select-content .ant-select-selection-item-content {
+    margin-inline-end: 0;
+  }
+  .ant-select-multiple .ant-select-content .ant-select-selection-item-remove {
+    position: absolute;
+    top: 0;
+    right: 4px;
+    display: inline-block;
+    font-size: 12px;
+    line-height: 22px;
+    transform: scale(0.83333333);
+  }
+  // antd 6 把图标下移到 -0.2em，antd 3 沿用 v2board 的 .anticon { vertical-align: .1em }
+  .ant-select-multiple .ant-select-content .ant-select-selection-item-remove > .anticon {
+    vertical-align: 0.1em;
+  }
+
+  // 多选 / tags 选择框的占位文字：antd 3 行高 20px（antd 6 为 21px 且用 -50% 位移居中，文字会上移半像素）
+  .ant-select-multiple .ant-select-placeholder {
+    line-height: 20px;
+    // 与 antd 3 一致距列表起点 6px（列表左侧已改为 5px，见上）
+    inset-inline-start: 6px;
+  }
+
+
+  // Modal.confirm / info / success / error / warning：还原 antd 3 的浮动布局
+  // （图标左浮动，标题 / 内容缩进 38px，按钮右浮动；antd 6 为 flex 布局且内边距不同）
+  .ant-modal.ant-modal-confirm .ant-modal-header,
+  .ant-modal.ant-modal-confirm .ant-modal-close {
+    display: none;
+  }
+  .ant-modal.ant-modal-confirm .ant-modal-body {
+    padding: 32px 32px 24px;
+  }
+  .ant-modal-confirm .ant-modal-confirm-body-wrapper::after {
+    display: table;
+    clear: both;
+    content: '';
+  }
+  .ant-modal-confirm .ant-modal-confirm-body {
+    display: block;
+  }
+  .ant-modal-confirm .ant-modal-confirm-body > .anticon {
+    float: left;
+    margin-right: 16px;
+    font-size: 22px;
+  }
+  .ant-modal-confirm .ant-modal-confirm-paragraph {
+    display: block;
+    max-width: none;
+    overflow: hidden;
+  }
+  .ant-modal-confirm .ant-modal-confirm-body .ant-modal-confirm-title {
+    display: block;
+    overflow: hidden;
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  .ant-modal-confirm .ant-modal-confirm-body .ant-modal-confirm-content {
+    margin-top: 8px;
+    color: rgba(0, 0, 0, 0.65);
+    font-size: 14px;
+  }
+  .ant-modal-confirm .ant-modal-confirm-btns {
+    float: right;
+    margin-top: 24px;
+  }
+  .ant-modal-confirm .ant-modal-confirm-btns .ant-btn + .ant-btn {
+    margin-bottom: 0;
+    margin-inline-start: 8px;
+  }
+  .ant-modal-confirm-error .ant-modal-confirm-body > .anticon {
+    color: #f5222d;
+  }
+  .ant-modal-confirm-confirm .ant-modal-confirm-body > .anticon,
+  .ant-modal-confirm-warning .ant-modal-confirm-body > .anticon {
+    color: #faad14;
+  }
+  .ant-modal-confirm-info .ant-modal-confirm-body > .anticon {
+    color: #1890ff;
+  }
+  .ant-modal-confirm-success .ant-modal-confirm-body > .anticon {
+    color: #52c41a;
+  }
+
+  // 按钮焦点：antd 3 用 hover 颜色表示焦点（点击后保持到失焦），没有 outline（outline 见文件末尾）
+  .ant-btn.ant-btn-variant-outlined:not(:disabled):focus,
+  .ant-btn.ant-btn-variant-dashed:not(:disabled):focus {
+    color: var(--ant-color-primary-hover);
+    border-color: var(--ant-color-primary-hover);
+  }
+  .ant-btn.ant-btn-variant-solid.ant-btn-color-primary:not(:disabled):focus {
+    background: var(--ant-color-primary-hover);
+  }
+  // 链接按钮（如路由弹窗「填写参考」前的占位按钮）：原版 antd 3 的按钮统一有 0 2px 0 rgba(0, 0, 0, 0.015) 的阴影，
+  // 链接按钮也没有去掉；antd 6 只给默认按钮加阴影
+  .ant-btn.ant-btn-variant-link {
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.015);
+  }
+  // 按钮样式的单选（如工单的「已开启 / 已关闭」）：antd 3 获得焦点时（点击后保持到失焦）有 3px、6% 主题色的描边，
+  // antd 6 只在键盘焦点时显示焦点
+  .ant-radio-button-wrapper:focus-within {
+    outline: 3px solid color-mix(in srgb, var(--ant-color-primary) 6%, transparent);
+  }
+
+  // 表头筛选：antd 3 的筛选图标绝对定位在单元格右侧 28px 宽的区域（单元格右侧留 30px），打开 / 悬停时灰色背景；
+  // antd 6 是标题右侧的 flex 按钮（有圆角与内边距）
+  .ant-table-wrapper .ant-table-thead > tr > th:has(> .ant-table-filter-column) {
+    padding-inline-end: 30px;
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-filter-column {
+    display: block;
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-filter-column .ant-table-filter-trigger {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    color: #bfbfbf;
+    border-radius: 0;
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-filter-column .ant-table-filter-trigger > .anticon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -5px;
+    margin-left: -6px;
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-filter-column .ant-table-filter-trigger:is(:hover, .ant-dropdown-open) {
+    color: rgba(0, 0, 0, 0.45);
+    background: #e5e5e5;
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-filter-column .ant-table-filter-trigger.active {
+    color: var(--ant-color-primary);
+  }
+  // 筛选下拉（LegacyFilterDropdown）：antd 3 最小宽度 96px、菜单最高 100vh - 130px（antd 6 为 120px、264px）
+  .ant-dropdown .ant-table-filter-dropdown {
+    min-width: 96px;
+  }
+  .ant-dropdown .ant-table-filter-dropdown .ant-dropdown-menu {
+    max-height: calc(100vh - 130px);
+  }
+  // 筛选下拉的「确定 / 重置」：antd 3 为主题色，悬停 / 按下为主题色的 hover / active 色（普通链接的悬停色来自 Bootstrap）
+  .ant-table-filter-dropdown-link {
+    color: var(--ant-color-primary);
+  }
+  .ant-table-filter-dropdown-link:hover {
+    color: var(--ant-color-primary-hover);
+  }
+  .ant-table-filter-dropdown-link:active {
+    color: var(--ant-color-primary-active);
+  }
+  // 表头排序：antd 3 的排序图标紧跟在标题后（间距 8px，两个 11px 的三角上下排列），antd 6 推到单元格最右侧
+  .ant-table-wrapper .ant-table-thead .ant-table-column-sorters {
+    display: inline-flex;
+    justify-content: flex-start;
+    vertical-align: top;
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-column-sorters > .ant-table-column-title {
+    flex: none;
+  }
+  // 悬停：antd 3 在整个表头单元格上再叠一层 rgba(0, 0, 0, 0.04)（过渡 0.3s），antd 6 只改单元格背景；
+  // 用 antd 6 本来就铺满单元格的 .ant-table-column-sorters::after 显示这层。这层盖住排序图标、在标题之下（antd 3 的标题
+  // position: relative 排在这层后面；antd 6 的标题 z-index: 1），标题里的问号提示才能悬停
+  .ant-table-wrapper .ant-table-thead .ant-table-column-sorters::after {
+    background: transparent;
+    transition: all 0.3s;
+  }
+  .ant-table-wrapper .ant-table-thead th.ant-table-column-has-sorters:hover .ant-table-column-sorters::after {
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-column-sorter {
+    margin-inline-start: 8px;
+    color: #bfbfbf;
+    font-size: inherit;
+  }
+  // 两个三角：antd 3 是 12px 图标缩小到 11px（scale 0.9167）、各占 6px 高的块、下三角再下移 1.5px，
+  // 整体高 1em（按表头 14px）、上移 0.15em，与标题垂直居中；antd 6 是不缩放的 12px 图标，上下叠在一起（字号为 0）
+  .ant-table-wrapper .ant-table-thead .ant-table-column-sorter-inner {
+    display: block;
+    height: 1em;
+    margin-top: -0.15em;
+    line-height: 1em;
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-column-sorter-inner > .anticon {
+    display: block;
+    height: 6px;
+    font-size: 12px;
+    line-height: 6px;
+    transform: scale(0.91666667);
+  }
+  .ant-table-wrapper .ant-table-thead .ant-table-column-sorter-inner > .ant-table-column-sorter-down {
+    margin-top: 1.5px;
+  }
+
+  // 空状态（如没有流量记录的表格、没有选项的下拉）：antd 3 的文字颜色为 rgba(0, 0, 0, 0.25)（antd 6 为 0.45），
+  // 普通尺寸左右没有外边距；描述是 <p>，行高继承 Dashmix 的段落行高 1.6（antd 6 是 div，行高 21px）
+  .ant-empty.ant-empty-normal,
+  .ant-empty.ant-empty-small,
+  .ant-empty:is(.ant-empty-normal, .ant-empty-small) .ant-empty-description {
+    color: rgba(0, 0, 0, 0.25);
+  }
+  .ant-empty.ant-empty-normal {
+    margin: 32px 0;
+  }
+  .ant-empty .ant-empty-description {
+    line-height: 1.6;
+  }
+
+  // 行悬停：antd 3 始终由 CSS :hover 显示，有固定列的表格另外由脚本维护悬停行（即 antd 6 的 .ant-table-cell-row-hover，
+  // 没有固定列时 V2Table 不绑定，见 LegacyCell），这里按 :hover 显示同样的颜色
+  .ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+    background: var(--ant-table-row-hover-bg);
+  }
+
+  // 表格测量行：antd 6 在可横向滚动的表格里多一行隐藏的测量行，用粗体的列标题（连同筛选图标）撑开列宽；
+  // antd 3 没有这一行，列宽只由表头和内容决定。带筛选的列会因此宽出几像素（如工单管理的「工单状态」），
+  // 让测量行的内容不参与列宽计算（测量行仍然按列宽读取宽度）
+  .ant-table-wrapper .ant-table-measure-row > td > div {
+    width: 0;
+  }
+
+  // 没有固定列、可以横向滚动的表格（如节点排序模式）：antd 6 在滚动方向的边缘画内阴影提示，antd 3 没有
+  .ant-table-wrapper .ant-table:not(.ant-table-has-fix-end).ant-table-fix-end-shadow-show .ant-table-container::after,
+  .ant-table-wrapper .ant-table:not(.ant-table-has-fix-start).ant-table-fix-start-shadow-show .ant-table-container::before {
+    box-shadow: none;
+  }
+
+  // 表格固定列（fixed: 'right'）需要横向滚动时：antd 3 的固定列是覆盖在右侧的独立表格，按内容宽度排版（不换行），
+  // 阴影 -6px 0 6px -4px；antd 6 是整列宽度的 sticky 单元格。V2Table 把固定列内容渲染两份（原位一份参与排版，
+  // 另一份 .v2b-fix-end-float 按内容宽度显示），并测出内容宽度（--v2b-fix-end-width）与剩余可滚动距离（--v2b-fix-end-rest）：
+  //   - 内容宽度小于列宽：把 sticky 单元格裁剪到内容宽度（快滚到末端时保留单元格原位置到覆盖层之间的部分，
+  //     antd 3 在这里露出的是主表格里的同一列）
+  //   - 内容宽度大于列宽：单元格背景向左延伸到内容宽度
+  // 不需要横向滚动时与普通列一样（antd 3 的覆盖层此时与原列重合）
+  .v2b-table .v2b-fix-end-float {
+    display: none;
+  }
+  .v2b-fix-end-overlay {
+    // antd 3 的覆盖层是表格背景，带小数的左边缘按四舍五入对齐像素；clip-path 的边缘向外取整（会多盖住 1px 阴影），
+    // 右移半个像素得到同样的结果
+    .ant-table-cell-fix-end {
+      clip-path: inset(0 0 0 calc(min(var(--v2b-fix-end-rest, 0px), 100% - var(--v2b-fix-end-width)) + 0.5px));
+    }
+    // 向下多出 1px 盖住单元格自己的下边框（伪元素相对内边距框定位，bottom: 0 会在边框上方再画一条线）
+    .ant-table-cell-fix-end::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: -1px;
+      z-index: -1;
+      box-sizing: border-box;
+      width: var(--v2b-fix-end-width);
+      background: inherit;
+      border-bottom: inherit;
+    }
+    .ant-table-cell-fix-end > .v2b-fix-end-flow {
+      visibility: hidden;
+    }
+    .ant-table-cell-fix-end > .v2b-fix-end-float {
+      position: absolute;
+      top: var(--ant-table-cell-padding-block, 16px);
+      right: var(--ant-table-cell-padding-inline, 16px);
+      bottom: var(--ant-table-cell-padding-block, 16px);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      width: max-content;
+      white-space: nowrap;
+    }
+    .ant-table-cell-fix-end::after {
+      box-shadow: none;
+    }
+    .ant-table-has-fix-end .ant-table-container::after {
+      display: block;
+      bottom: 0;
+      width: var(--v2b-fix-end-width);
+      box-shadow: none;
+    }
+    .ant-table-has-fix-end.ant-table-fix-end-shadow-show .ant-table-container::after {
+      box-shadow: -6px 0 6px -4px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// 以下几条的选择器需要 html 类型选择器提高优先级，不能嵌套在上面的 :where(html) 里
+
+// 图标：antd 3 的图标 svg 没有设置 vertical-align，实际吃到 Bootstrap reboot 的 svg { vertical-align: middle }；
+// antd 6 的 @ant-design/icons 注入了 .anticon svg { vertical-align: inherit }，这里恢复
+html:where([data-v2b-ui='legacy']) .anticon svg {
+  vertical-align: middle;
+}
+
+// 按钮焦点：没有 outline（antd 6 的 focus-visible 规则优先级较高）
+html:where([data-v2b-ui='legacy']) .ant-btn:not(:disabled):focus-visible {
+  outline: none;
+}
+
+// 原版 theme/green.css 由较早的 antd 3 版本生成，按钮行高是 1.499（其他主题为 1.5），这是四套主题唯一的几何差异
+:where(html[data-v2b-ui='legacy'][data-v2b-color='green']) .ant-btn {
+  line-height: 1.499;
+}

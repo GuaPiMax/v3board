@@ -1,0 +1,204 @@
+// 页面框架：#page-container / #sidebar / #page-header / #main-container（数值按原版实测）
+$sidebar-width: 250px;
+$header-height: 4.25rem;
+$side-transition: 0.45s cubic-bezier(0.2, 0.61, 0.42, 0.97);
+
+#page-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  width: 100%;
+  min-width: 320px;
+  min-height: 100vh;
+}
+#main-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  max-width: 100%;
+}
+
+.content {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.875rem 0.875rem 1px;
+  overflow-x: visible;
+}
+.content > .pull {
+  margin: -0.875rem -0.875rem -1px;
+}
+.content.content-full {
+  padding-bottom: 0.875rem;
+}
+@media (min-width: 768px) {
+  .content {
+    width: 100%;
+    margin: 0 auto;
+    padding: 1.75rem 1.75rem 1px;
+    overflow-x: visible;
+  }
+  .content > .pull {
+    margin: -1.75rem -1.75rem -1px;
+  }
+  .content.content-full {
+    padding-bottom: 1.75rem;
+  }
+}
+.content-max-width {
+  max-width: 1920px;
+}
+
+.content-side {
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.125rem 1.125rem 1px;
+  overflow-x: hidden;
+}
+.content-side > .pull {
+  margin: -1.125rem -1.125rem -1px;
+}
+.content-side.content-side-full {
+  padding-bottom: 1.125rem;
+}
+
+#page-header {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  background-color: #fff;
+}
+.overlay-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #fff;
+  opacity: 0;
+  transition:
+    transform 0.2s ease-in-out,
+    opacity 0.2s ease-in-out;
+  transform: translateY(-100%);
+  will-change: opacity, transform;
+}
+.overlay-header.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 auto;
+  height: $header-height;
+}
+#page-header .content-header {
+  padding-left: 0.875rem;
+  padding-right: 0.875rem;
+}
+@media (min-width: 768px) {
+  #page-header .content-header {
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
+  }
+}
+#sidebar .content-header {
+  padding-left: 1.125rem;
+  padding-right: 1.125rem;
+}
+
+.smini-hide,
+.smini-show {
+  transition: opacity $side-transition;
+}
+
+#sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1032;
+  width: 100%;
+  height: 100%;
+  overflow-y: visible;
+  background-color: #fff;
+  transform: translateX(-100%) translateY(0) translateZ(0);
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+}
+.side-trans-enabled #sidebar {
+  transition: transform $side-transition;
+}
+@media (max-width: 991.98px) {
+  .sidebar-o-xs #sidebar {
+    transform: translateX(0) translateY(0) translateZ(0);
+  }
+}
+@media (min-width: 992px) {
+  #sidebar {
+    width: $sidebar-width;
+  }
+  .sidebar-o #sidebar {
+    transform: translateX(0) translateY(0) translateZ(0);
+  }
+}
+
+#page-container > #main-container .content,
+#page-container > #page-footer .content,
+#page-container > #page-header .content,
+#page-container > #page-header .content-header {
+  max-width: 1920px;
+}
+#page-container.main-content-boxed > #main-container .content,
+#page-container.main-content-boxed > #page-footer .content,
+#page-container.main-content-boxed > #page-header .content,
+#page-container.main-content-boxed > #page-header .content-header {
+  max-width: 1200px;
+}
+
+#page-container.page-header-dark #page-header {
+  color: #c8d2e6;
+  background-color: $primary;
+}
+#page-container.page-header-fixed #page-header {
+  position: fixed;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.02);
+}
+#page-container.page-header-fixed.page-header-dark #page-header {
+  box-shadow: none;
+}
+#page-container.page-header-fixed #main-container {
+  padding-top: $header-height;
+}
+#page-container.page-header-fixed #page-header {
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+  min-width: 320px;
+  max-width: 100%;
+  width: auto;
+}
+@media (min-width: 992px) {
+  #page-container.page-header-fixed.sidebar-o #page-header {
+    padding-left: $sidebar-width;
+  }
+  #page-container.page-header-fixed.sidebar-o #page-header .overlay-header {
+    left: $sidebar-width;
+  }
+}
+
+#page-container.sidebar-dark #sidebar {
+  color: #e4e9f3;
+  background-color: #343a40;
+  box-shadow: none;
+}
+@media (min-width: 992px) {
+  #page-container.side-scroll #sidebar .content-header,
+  #page-container.side-scroll #sidebar .content-side {
+    width: $sidebar-width !important;
+  }
+  #page-container.sidebar-o {
+    padding-left: $sidebar-width;
+  }
+}

@@ -14,6 +14,9 @@ class PlanSave extends FormRequest
     public function rules()
     {
         return [
+            'external_subscription_ids' => 'sometimes|array|max:100',
+            'external_subscription_ids.*' => 'required|integer|min:1|distinct|exists:v2_external_subscription,id',
+            'external_binding_token' => 'nullable|string|size:64',
             'name' => 'required',
             'content' => '',
             'group_id' => 'required',

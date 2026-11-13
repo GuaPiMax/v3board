@@ -1,0 +1,273 @@
+// antd 3 标签页（Tabs）样式（MIT，取自原版 components.chunk.css），配合 components/V2Tabs.tsx 使用（各预设都输出 antd 3 的 DOM）。
+// 只保留顶部标签栏、线条型（type="line"）与大号（size="large"）用到的规则；颜色改用主题色变量（原版由 theme/*.css 重新着色）。
+// 写成 mixin：legacy 在这里用原版的颜色与线宽输出，皮肤在 skins/index.scss 里换成 antd 的变量再输出一份（排列、翻页与 legacy 相同）。
+// antd 6 的 Tabs 也使用 .ant-tabs / .ant-tabs-nav / .ant-tabs-tab 等类名：规则都限定在预设的作用域里，
+// 并以 .ant-tabs.ant-tabs-line 为前缀（antd 6 的 Tabs 没有 ant-tabs-line），优先级高于 antd 6 的标签样式，
+// 同时显式写出 antd 6 会设置的属性（根节点的 display、标签的 display / 字号 / 颜色等）。否则页面里同时有 antd 6 的标签样式时
+// （例如开发时热更新留下的），它依赖的组件变量在这里不存在，`.ant-tabs-tab + .ant-tabs-tab { margin: 0 0 0 var(…) }`
+// 失效后第二个起的标签外边距都变成 0（标签挤在一起），墨条的 `background: var(…)` 失效后变成透明
+
+// 负的线宽：数值直接取负（legacy 输出 -1px），CSS 变量用 calc
+@function antd3-tabs-neg($value) {
+  @if type-of($value) == 'number' {
+    @return -$value;
+  }
+  @return calc(-1 * #{$value});
+}
+
+// $line-width：标签栏下边线的粗细；墨条与标签容器按它下移，压在下边线上（与原版 1px 时相同）。
+// $bar-margin：标签栏的外边距（antd 3 默认下边距 16px；legacy 由排在后面的 v2board.scss 改成 0）
+@mixin antd3-tabs(
+  $text: rgba(0, 0, 0, 0.65),
+  $bar-margin: 0 0 16px,
+  $line-width: 1px,
+  $line-color: #e8e8e8,
+  $arrow: rgba(0, 0, 0, 0.45),
+  $arrow-hover: rgba(0, 0, 0, 0.65),
+  $arrow-disabled: rgba(0, 0, 0, 0.25),
+  $selected: var(--ant-color-primary),
+  $hover: var(--ant-color-primary-hover),
+  $active: var(--ant-color-primary-active)
+) {
+  .ant-tabs.ant-tabs-line {
+    display: block;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: $text;
+    font-size: 14px;
+    font-variant: tabular-nums;
+    line-height: 1.5;
+    list-style: none;
+    font-feature-settings: 'tnum';
+    position: relative;
+    overflow: hidden;
+
+    &::before,
+    &::after {
+      display: table;
+      content: '';
+    }
+    &::after {
+      clear: both;
+    }
+
+    .ant-tabs-ink-bar {
+      position: absolute;
+      bottom: $line-width;
+      left: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      width: 0;
+      height: 2px;
+      background: $selected;
+      transform-origin: 0 0;
+      pointer-events: none;
+    }
+    .ant-tabs-bar {
+      margin: $bar-margin;
+      border-bottom: $line-width solid $line-color;
+      outline: none;
+      transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    .ant-tabs-nav-container {
+      position: relative;
+      box-sizing: border-box;
+      margin-bottom: antd3-tabs-neg($line-width);
+      overflow: hidden;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: nowrap;
+      transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    .ant-tabs-nav-container::before,
+    .ant-tabs-nav-container::after {
+      display: table;
+      content: '';
+    }
+    .ant-tabs-nav-container::after {
+      clear: both;
+    }
+    .ant-tabs-nav-container-scrolling {
+      padding-right: 32px;
+      padding-left: 32px;
+    }
+    .ant-tabs-tab-prev,
+    .ant-tabs-tab-next {
+      position: absolute;
+      z-index: 2;
+      width: 0;
+      height: 100%;
+      color: $arrow;
+      text-align: center;
+      background-color: transparent;
+      border: 0;
+      cursor: pointer;
+      opacity: 0;
+      transition:
+        width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+        opacity 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+        color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      user-select: none;
+      pointer-events: none;
+    }
+    .ant-tabs-tab-prev.ant-tabs-tab-arrow-show,
+    .ant-tabs-tab-next.ant-tabs-tab-arrow-show {
+      width: 32px;
+      height: 100%;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .ant-tabs-tab-prev:hover,
+    .ant-tabs-tab-next:hover {
+      color: $arrow-hover;
+    }
+    .ant-tabs-tab-prev-icon,
+    .ant-tabs-tab-next-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      font-weight: 700;
+      font-style: normal;
+      font-variant: normal;
+      line-height: inherit;
+      text-align: center;
+      text-transform: none;
+      transform: translate(-50%, -50%);
+    }
+    .ant-tabs-tab-prev-icon-target,
+    .ant-tabs-tab-next-icon-target {
+      display: inline-block;
+      font-size: 12px;
+      transform: scale(0.83333333) rotate(0deg);
+    }
+    .ant-tabs-tab-btn-disabled {
+      cursor: not-allowed;
+    }
+    .ant-tabs-tab-btn-disabled,
+    .ant-tabs-tab-btn-disabled:hover {
+      color: $arrow-disabled;
+    }
+    .ant-tabs-tab-next {
+      right: 2px;
+    }
+    .ant-tabs-tab-prev {
+      left: 0;
+    }
+    .ant-tabs-nav-wrap {
+      margin-bottom: antd3-tabs-neg($line-width);
+      overflow: hidden;
+    }
+    .ant-tabs-nav-scroll {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ant-tabs-nav {
+      position: relative;
+      display: inline-block;
+      box-sizing: border-box;
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+      transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    .ant-tabs-nav::before,
+    .ant-tabs-nav::after {
+      display: table;
+      content: ' ';
+    }
+    .ant-tabs-nav::after {
+      clear: both;
+    }
+    .ant-tabs-nav .ant-tabs-tab {
+      position: relative;
+      display: inline-block;
+      box-sizing: border-box;
+      height: 100%;
+      margin: 0 32px 0 0;
+      padding: 12px 16px;
+      color: inherit;
+      font-size: inherit;
+      text-decoration: none;
+      background: transparent;
+      border: 0;
+      outline: none;
+      cursor: pointer;
+      transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    .ant-tabs-nav .ant-tabs-tab::before {
+      position: absolute;
+      top: -1px;
+      left: 0;
+      width: 100%;
+      border-top: 2px solid transparent;
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s;
+      content: '';
+      pointer-events: none;
+    }
+    .ant-tabs-nav .ant-tabs-tab:last-child {
+      margin-right: 0;
+    }
+    .ant-tabs-nav .ant-tabs-tab:hover {
+      color: $hover;
+    }
+    .ant-tabs-nav .ant-tabs-tab:active {
+      color: $active;
+    }
+    .ant-tabs-nav .ant-tabs-tab .anticon {
+      margin-right: 8px;
+    }
+    .ant-tabs-nav .ant-tabs-tab-active {
+      color: $selected;
+      font-weight: 500;
+    }
+    .ant-tabs-large-bar .ant-tabs-nav-container {
+      font-size: 16px;
+    }
+    .ant-tabs-large-bar .ant-tabs-tab {
+      padding: 16px;
+    }
+    .ant-tabs-content::before {
+      display: block;
+      overflow: hidden;
+      content: '';
+    }
+    .ant-tabs-top-content {
+      width: 100%;
+    }
+    .ant-tabs-top-content > .ant-tabs-tabpane {
+      flex-shrink: 0;
+      width: 100%;
+      backface-visibility: hidden;
+      opacity: 1;
+      transition: opacity 0.45s;
+    }
+    .ant-tabs-top-content > .ant-tabs-tabpane-inactive {
+      height: 0;
+      padding: 0 !important;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .ant-tabs-top-content > .ant-tabs-tabpane-inactive input {
+      visibility: hidden;
+    }
+    .ant-tabs-top-content.ant-tabs-content-animated {
+      display: flex;
+      flex-direction: row;
+      transition: margin-left 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      will-change: margin-left;
+    }
+    &.ant-tabs-top .ant-tabs-ink-bar-animated {
+      transition:
+        transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+        width 0.2s cubic-bezier(0.645, 0.045, 0.355, 1),
+        left 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+  }
+}
+
+:where(html[data-v2b-ui='legacy']) {
+  @include antd3-tabs;
+}

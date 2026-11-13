@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-XKyaHtl9.js";import{Si as t}from"./staticApi-Cf6ISHlw.js";var n=e(t(),1);function r(){let[e,t]=(0,n.useState)(!1),r=(0,n.useRef)(0);return{open:e,onOpenChange:(e,n)=>{if(n?.source===`menu`)r.current=Date.now();else if(e&&Date.now()-r.current<300)return;t(e)}}}export{r as t};

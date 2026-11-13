@@ -1,0 +1,45 @@
+// 皮肤（顶栏的主题按钮切换，见 src/app/skins）：在 antd 6 的默认观感之上整体换肤，布局不变。
+// 每种皮肤由三部分组成：app/skins/<名字>.ts（antd 主题）、这里的 _<名字>.scss（--v2b-* 变量与特有的装饰）、
+// 下面 $skin-scope 里的一行。legacy 下不生效；:where() 限定作用域，不改变选择器优先级
+@import 'shell';
+@import 'antd';
+
+// 全部皮肤（新增风格在这里加一行，逗号分隔）
+$skin-scope: "html[data-v2b-ui='illustration'], html[data-v2b-ui='geek']";
+
+:where(#{$skin-scope}) {
+  // 页面按原版 DOM 写、在 antd 6 下需要的布局修正（见 _antd3-dom.scss、_antd6-dom.scss；
+  // 主按钮的静态背景是给 darkreader 用的，皮肤不需要）
+  @include empty-button;
+  @include button-baseline;
+  @include spin-inherit;
+  @include tag-defaults;
+  @include grid-col-defaults;
+  @include badge-dot-gap;
+  @include antd6-icon;
+  @include antd6-icon-button;
+  @include antd6-drawer;
+  @include antd6-fixed-end;
+  // 系统配置的标签页与 legacy 相同（components/V2Tabs 输出 antd 3 的结构：间距、放不下时点 ‹ › 翻页），
+  // 颜色、线宽换成 antd 的变量（插画暗色的选中色用链接色，见 _illustration.scss 的 --v2b-tab-*）；
+  // 标签栏紧贴下面的内容：v2board.scss 里去掉下边距的同名规则排在皮肤之前，会被这里覆盖，直接写 0
+  @include antd3-tabs(
+    $text: var(--ant-color-text),
+    $bar-margin: 0,
+    $line-width: var(--ant-line-width),
+    $line-color: var(--ant-color-border-secondary),
+    $arrow: var(--ant-color-text-tertiary),
+    $arrow-hover: var(--ant-color-text),
+    $arrow-disabled: var(--ant-color-text-quaternary),
+    $selected: var(--v2b-tab-selected, var(--ant-color-primary)),
+    $hover: var(--v2b-tab-hover, var(--ant-color-primary-hover)),
+    $active: var(--v2b-tab-active, var(--ant-color-primary-active))
+  );
+
+  // 外框与 antd 组件的换肤（读取各皮肤的 --v2b-* 变量）
+  @include skin-shell;
+  @include skin-antd;
+}
+
+@import 'illustration';
+@import 'geek';

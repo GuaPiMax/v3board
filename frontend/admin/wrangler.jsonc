@@ -1,0 +1,15 @@
+// Cloudflare Workers 部署：README 的「Deploy to Cloudflare」按钮按这个文件创建 Worker。
+//   - 构建命令是 package.json 的 build（vite build），部署命令是 Cloudflare 默认的 npx wrangler deploy；
+//   - 打包产物 dist/ 作为静态资源直接返回（响应头按其中的 _headers）；
+//   - 只有 /config.js 先经过 worker/index.ts，按 Worker 的变量和机密（V2B_*，见 .dev.vars.example）生成。
+{
+  "name": "v2board-admin",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-20",
+  "assets": {
+    "directory": "./dist",
+    "run_worker_first": ["/config.js"]
+  },
+  // 变量都在部署页面或 Cloudflare 后台填写，这里不写 vars；重新部署时保留后台添加的变量
+  "keep_vars": true
+}

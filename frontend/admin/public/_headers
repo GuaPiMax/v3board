@@ -1,0 +1,14 @@
+# Cloudflare 的响应头规则（Workers 静态资源与 Pages 都读这个文件）：打包时复制到 dist/，其他部署方式用不到。
+# 同一个响应头命中多条规则时会用逗号拼接，所以 Cache-Control 的规则不能重叠。
+
+# 运行时配置：每次都向服务器确认是否有更新（Workers 部署时 /config.js 由 worker/index.ts 生成，响应头写在那里）
+/config.js
+  Cache-Control: no-cache
+
+# 文件名带内容哈希，可以长期缓存
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 不让搜索引擎收录管理端
+/*
+  X-Robots-Tag: noindex, nofollow

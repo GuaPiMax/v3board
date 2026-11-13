@@ -1,0 +1,88 @@
+// 插画风（app/skins/illustration.ts）：米白底色（带点状底纹）、深色描边、错位实色阴影、大圆角。
+// 颜色与 illustration.ts 的 PALETTE 对应；描边、底色等尽量引用 antd 的变量，随主题色与暗色变化
+
+:where(html[data-v2b-ui='illustration']) {
+  // html / body 上用到的（antd 变量不在这里生效）
+  --v2b-page-bg: #fff9f0;
+  --v2b-text: #2c2c2c;
+  --v2b-page-pattern: radial-gradient(rgba(44, 44, 44, 0.1) 1px, transparent 1.5px);
+  --v2b-page-pattern-size: 22px 22px;
+
+  .v2b {
+    --v2b-line: var(--ant-color-border);
+    --v2b-line-width: 2px;
+    --v2b-line-soft: var(--ant-color-border-secondary);
+    --v2b-radius: var(--ant-border-radius-lg);
+    --v2b-radius-sm: var(--ant-border-radius);
+    --v2b-shadow-color: #2c2c2c;
+    --v2b-shadow: 4px 4px 0 var(--v2b-shadow-color);
+    --v2b-shadow-sm: 3px 3px 0 var(--v2b-shadow-color);
+    --v2b-shadow-hover: 6px 6px 0 var(--v2b-shadow-color);
+    --v2b-shadow-focus: 3px 3px 0 var(--ant-color-primary);
+    --v2b-press: translate(3px, 3px);
+    --v2b-lift: translate(-2px, -2px);
+    --v2b-mask: rgba(44, 44, 44, 0.45);
+
+    --v2b-surface-alt: #fff4e6;
+    --v2b-surface-sunken: #f6eee2;
+
+    --v2b-sidebar-bg: var(--ant-color-primary-bg);
+    --v2b-sidebar-edge: var(--v2b-line-width) solid var(--v2b-line);
+    --v2b-brand-bg: transparent;
+    --v2b-brand-text: var(--ant-color-text);
+    --v2b-brand-edge: var(--v2b-line-width) solid var(--v2b-line);
+    --v2b-nav-hover-bg: color-mix(in srgb, var(--ant-color-bg-container) 65%, transparent);
+    --v2b-nav-active-bg: var(--ant-color-bg-container);
+    --v2b-nav-active-text: var(--ant-color-text);
+
+    --v2b-header-bg: var(--ant-color-bg-container);
+    --v2b-header-shadow: 0 var(--v2b-line-width) 0 var(--v2b-line);
+
+    // 浮层的描边用阴影画（不占位置）：一圈线宽的描边，外加扩展同样宽度的错位阴影（与描边保持 3–4px 的错位）
+    --v2b-ring: 0 0 0 var(--v2b-line-width) var(--v2b-line);
+    --v2b-ring-shadow: var(--v2b-ring), 4px 4px 0 var(--v2b-line-width) var(--v2b-shadow-color);
+    --v2b-ring-shadow-sm: var(--v2b-ring), 3px 3px 0 var(--v2b-line-width) var(--v2b-shadow-color);
+    --v2b-ring-inset-shadow-sm: inset var(--v2b-ring), 3px 3px 0 var(--v2b-shadow-color);
+    // 浮层与触发控件之间在 antd 的 4px 之外再错开的距离（向上弹出时浮层的阴影在下面，多留一些）
+    --v2b-popup-gap: 4px;
+    --v2b-popup-gap-top: 6px;
+    // 抽屉左边缘（右侧抽屉）；手机上贴着屏幕两边的内容块只向下投阴影
+    --v2b-drawer-edge: calc(-1 * var(--v2b-line-width)) 0 0 var(--v2b-line);
+    --v2b-band-shadow: 0 3px 0 var(--v2b-shadow-color);
+  }
+}
+
+// 暗色版：深炭灰底、浅米色描边与文字，错位阴影与描边同色（与亮色版一样；纯黑在深底上看不出来）
+:where(html[data-v2b-ui='illustration'][data-v2b-dark]) {
+  --v2b-page-bg: #1f1d1a;
+  --v2b-text: #efe8dc;
+  --v2b-page-pattern: radial-gradient(rgba(239, 232, 220, 0.08) 1px, transparent 1.5px);
+
+  .v2b {
+    --v2b-shadow-color: #b3a999;
+    --v2b-mask: rgba(0, 0, 0, 0.6);
+    // 侧边栏用暖灰（主题色的深色偏冷）
+    --v2b-sidebar-bg: #25221f;
+    // 系统配置子项左侧的色条：主题色的描边色在暗色下太暗
+    --v2b-config-strip: var(--ant-color-link);
+    // 系统配置的标签：选中、悬停、按下用链接色（主题色是按钮的深色底，做文字太暗；与 illustration.ts 的 Tabs 相同）
+    --v2b-tab-selected: var(--ant-color-link);
+    --v2b-tab-hover: var(--ant-color-link-hover);
+    --v2b-tab-active: var(--ant-color-link-active);
+    --v2b-surface-alt: #34302b;
+    --v2b-surface-sunken: #262320;
+  }
+}
+
+// 暗色版弹窗里的表格（流量记录）：表体与弹窗同色，表头再亮一级才分得出来
+:where(html[data-v2b-ui='illustration'][data-v2b-dark]) .ant-modal .ant-table-wrapper .ant-table-thead > tr > th {
+  background: #3b362f;
+}
+
+// 窄屏（320px 宽的手机）：顶栏多了主题按钮后，粗描边的按钮把标题挤得折行，按钮的左右内边距收小一些
+@media (max-width: 359.98px) {
+  :where(html[data-v2b-ui='illustration']) #page-header .btn {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+}

@@ -1,0 +1,306 @@
+// 极客风（app/skins/geek.ts）：近黑的墨绿底色（带网格底纹）、暗绿色细线、直角；霓虹绿与发光只用在标题、链接、
+// 选中项、聚焦、主按钮与浮层上。固定暗色（<html> 始终带 data-v2b-dark）。颜色与 geek.ts 的 C 对应，
+// 描边、底色等尽量引用 antd 的变量。下面的装饰排在共用的 _shell / _antd 之后，选择器相同时这里生效
+
+// 霓虹绿的外发光
+@function neon-glow($blur, $alpha) {
+  @return 0 0 $blur rgba(57, 255, 20, $alpha);
+}
+$mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+:where(html[data-v2b-ui='geek']) {
+  // html / body 上用到的（antd 变量不在这里生效）
+  --v2b-page-bg: #030603;
+  --v2b-text: #b4d4ad;
+  // 网格底纹
+  --v2b-page-pattern:
+    linear-gradient(rgba(57, 255, 20, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 20, 0.04) 1px, transparent 1px);
+  --v2b-page-pattern-size: 24px 24px;
+  // 滚动条：暗绿色（会继承到页面里的滚动区域）
+  scrollbar-color: #1d5a17 transparent;
+
+  .v2b {
+    --v2b-line: var(--ant-color-border);
+    --v2b-line-width: 1px;
+    --v2b-line-soft: var(--ant-color-border-secondary);
+    --v2b-radius: 0;
+    --v2b-radius-sm: 0;
+    // 静止时没有投影（错位阴影是插画的）；共用样式里会把几个阴影拼在一起，用透明的零阴影占位
+    --v2b-shadow: 0 0 transparent;
+    --v2b-shadow-sm: 0 0 transparent;
+    --v2b-band-shadow: 0 0 transparent;
+    // 悬停（仪表盘的快捷入口等）、聚焦：霓虹绿描边与发光；不做按下位移
+    --v2b-shadow-hover: 0 0 0 var(--v2b-line-width) var(--ant-color-primary), #{neon-glow(16px, 0.3)};
+    --v2b-shadow-focus: #{neon-glow(8px, 0.45)};
+    --v2b-press: none;
+    --v2b-lift: none;
+    --v2b-mask: rgba(0, 0, 0, 0.6);
+    --v2b-surface-alt: #0d1f10;
+    --v2b-surface-sunken: #050c06;
+    // 霓虹绿底上的文字（主按钮、选中的文字）
+    --v2b-on-primary: #030603;
+    // 页面里写死颜色的「删除」等（legacy / 插画取原来的 #ff4d4f）
+    --v2b-danger-text: var(--ant-color-error);
+    --v2b-glow-text: 0 0 6px rgba(57, 255, 20, 0.55);
+
+    --v2b-sidebar-bg: #030603;
+    --v2b-sidebar-edge: var(--v2b-line-width) solid var(--v2b-line);
+    // 站点名称与顶栏同色，连成一条
+    --v2b-brand-bg: #051105;
+    --v2b-brand-text: var(--ant-color-primary);
+    --v2b-brand-edge: var(--v2b-line-width) solid var(--v2b-line);
+    --v2b-nav-hover-bg: rgba(57, 255, 20, 0.08);
+    // 激活的菜单项：霓虹绿底、深色字（终端里的选中行）
+    --v2b-nav-active-bg: var(--ant-color-primary);
+    --v2b-nav-active-text: #030603;
+    --v2b-nav-active-line: var(--ant-color-primary);
+    --v2b-nav-active-shadow: #{neon-glow(12px, 0.45)};
+
+    --v2b-header-bg: #051105;
+    --v2b-header-shadow: 0 var(--v2b-line-width) 0 var(--v2b-line);
+    // 顶栏、登录页的按钮悬停：霓虹绿描边、文字与发光
+    --v2b-btn-hover-bg: var(--ant-color-bg-container);
+    --v2b-btn-hover-text: var(--ant-color-primary);
+    --v2b-btn-hover-line: var(--ant-color-primary);
+    --v2b-btn-hover-shadow: #{neon-glow(8px, 0.35)};
+
+    // 开关的描边；浮层用霓虹绿描边（用阴影画，不占位置）与外发光
+    --v2b-ring: 0 0 0 var(--v2b-line-width) var(--v2b-line);
+    --v2b-ring-shadow: 0 0 0 var(--v2b-line-width) var(--ant-color-primary), #{neon-glow(18px, 0.22)};
+    --v2b-ring-inset-shadow-sm: inset 0 0 0 var(--v2b-line-width) var(--ant-color-primary), #{neon-glow(10px, 0.25)};
+    // 浮层与控件的距离与插画相同（手机上用户页的 Tips 提示向左让位时，离得太近会压住「操作」按钮）
+    --v2b-popup-gap: 4px;
+    --v2b-popup-gap-top: 6px;
+    --v2b-drawer-edge: calc(-1 * var(--v2b-line-width)) 0 0 var(--ant-color-primary), #{neon-glow(24px, 0.12)};
+    --v2b-config-strip: var(--ant-color-primary);
+  }
+
+  // ---- 文字：数字等宽；标题发光 ----
+  body {
+    font-variant-numeric: tabular-nums;
+  }
+  :is(h1, h2, h3, h4, h5, h6),
+  .block-title,
+  #page-header .v2board-container-title,
+  .ant-modal-title,
+  .ant-modal-confirm-title,
+  .ant-drawer-title {
+    text-shadow: var(--v2b-glow-text);
+  }
+  // 抽屉标题（antd 不设颜色，继承正文色）、带 .text-black 的标题（主题配置的卡片）也用标题色
+  .ant-drawer-title,
+  :is(h1, h2, h3, h4, h5, h6):is(.text-black, .text-dark) {
+    color: var(--ant-color-text-heading) !important;
+  }
+  // 内容里的标题不发光：知识库的预览区（跟随预览区的正文色）、手机上节点列表每项的名称（一屏十几个，桌面表格里是正文色）
+  .ant-drawer .custom-html-style :is(h1, h2, h3, h4, h5, h6),
+  .ant-list-item-meta-title {
+    text-shadow: none;
+  }
+  .ant-list-item-meta-title,
+  .ant-list-vertical .ant-list-item-meta-title {
+    color: var(--ant-color-text);
+  }
+  // Dashmix 的状态色辅助类（登出图标、队列状态等）换成皮肤的状态色
+  .text-success {
+    color: var(--ant-color-success) !important;
+  }
+  .text-info {
+    color: var(--ant-color-info) !important;
+  }
+  .text-warning {
+    color: var(--ant-color-warning) !important;
+  }
+  .text-danger {
+    color: var(--ant-color-error) !important;
+  }
+  // 行内代码（Bootstrap 的粉色像错误色）
+  code {
+    color: var(--ant-color-info);
+  }
+  // 链接悬停时发光（激活的菜单项是霓虹绿底上的深色字，不发光）
+  a:not(.active):hover {
+    text-shadow: var(--v2b-glow-text);
+  }
+  // 直角：Bootstrap 的圆角辅助类（主题配置的胶囊按钮等；圆形头像等 .rounded-circle 不改）
+  .rounded,
+  .rounded-pill {
+    border-radius: 0 !important;
+  }
+
+  // ---- 侧边栏 ----
+  // 站点名称：等宽字体、字距加宽、发光
+  #sidebar .bg-header-dark a.link-fx {
+    font-family: $mono;
+    letter-spacing: 0.06em;
+    text-shadow: var(--v2b-glow-text);
+  }
+  .nav-main-heading,
+  .sidebar-dark #sidebar .nav-main-heading {
+    color: #3f8f33;
+  }
+  .nav-main-link:not(.active):hover,
+  .sidebar-dark #sidebar .nav-main-link:not(.active):hover {
+    color: var(--ant-color-primary);
+  }
+  .nav-main-link.active,
+  .sidebar-dark #sidebar .nav-main-link.active {
+    font-weight: 600;
+  }
+  .nav-main-link.active .nav-main-link-icon,
+  .sidebar-dark #sidebar .nav-main-link.active > .nav-main-link-icon {
+    color: inherit;
+  }
+
+  // ---- 顶栏的账号菜单：与 antd 的浮层一样 ----
+  .dropdown-menu {
+    background-color: var(--ant-color-bg-elevated);
+    border-color: var(--ant-color-primary);
+    box-shadow: neon-glow(18px, 0.22);
+  }
+
+  // ---- 登录页：卡片霓虹绿描边与发光，站点名称与侧边栏的一样 ----
+  .v2board-auth-box .block.block-transparent {
+    border-color: var(--ant-color-primary);
+    box-shadow: neon-glow(28px, 0.18) !important;
+  }
+  .v2board-auth-box .font-size-h1 .text-dark {
+    font-family: $mono;
+    letter-spacing: 0.06em;
+    color: var(--ant-color-primary) !important;
+    text-shadow: var(--v2b-glow-text);
+  }
+  // Bootstrap 的主按钮（登录）：与 antd 主按钮一样发光、不画暗绿描边（顶栏里的按钮是普通按钮，选择器更具体，不受影响）
+  .btn-primary,
+  .btn-primary:hover,
+  .btn-primary:focus,
+  .btn-primary.focus {
+    border-color: var(--ant-color-primary);
+    box-shadow: neon-glow(10px, 0.45);
+  }
+  .btn-primary:not(:disabled):not(.disabled):active,
+  .btn-primary:not(:disabled):not(.disabled):active:focus {
+    border-color: var(--ant-color-primary-active);
+  }
+  // 登录按钮与上面的输入框同高（40px；描边 1px 时 Bootstrap 按钮是 38px）
+  .v2board-auth-box .btn {
+    padding-top: calc(0.375rem + var(--v2b-line-width));
+    padding-bottom: calc(0.375rem + var(--v2b-line-width));
+  }
+
+  // ---- 工单对话的标题 ----
+  .tag___12_9H {
+    color: var(--ant-color-primary);
+    text-shadow: var(--v2b-glow-text);
+  }
+
+  // ---- 仪表盘：与原版一样拼成一块（没有错位阴影，不用像插画那样拆成卡片留出位置；见 _shell.scss）----
+  @include skin-dashboard-joined;
+
+  // ---- 仪表盘的统计数字：霓虹绿；大号数字用等宽字体（第二行原版就不换行，手机上等宽会把数值裁掉）----
+  .v2board-stats-bar :is(.display-4, .fs-3) {
+    color: var(--ant-color-primary) !important;
+    text-shadow: var(--v2b-glow-text);
+  }
+  .v2board-stats-bar .display-4 {
+    font-family: $mono;
+  }
+
+  // ---- 提示：描边用状态色 ----
+  .alert-danger {
+    border-color: var(--ant-color-error-border-hover);
+  }
+  .alert-warning {
+    border-color: var(--ant-color-warning-border-hover);
+  }
+
+  // ---- antd 按钮 ----
+  // 实心按钮不画描边（_antd.scss 给插画加的深色描边）
+  .ant-btn.ant-btn-variant-solid {
+    --ant-btn-border-color: transparent;
+  }
+  // 描边按钮悬停时发光（危险按钮除外）
+  .ant-btn:is(.ant-btn-color-default, .ant-btn-color-primary):is(
+      .ant-btn-variant-outlined,
+      .ant-btn-variant-dashed
+    ):not(:disabled):hover {
+    box-shadow: neon-glow(8px, 0.3);
+  }
+  // 按钮组里的主按钮（订单「过滤器」生效后）也发光（_antd.scss 去掉了组里按钮的阴影，组外层的阴影在这里是透明的）
+  .ant-btn-group > .ant-btn.ant-btn-variant-solid.ant-btn-color-primary:not(:active) {
+    box-shadow: neon-glow(10px, 0.45);
+  }
+  // 单选按钮组的选中项（工单「已开启 / 已关闭」）与其他选中项一样发光
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+    box-shadow: neon-glow(8px, 0.35);
+  }
+
+  // ---- 开关：直角；打开时滑块用深色、整体发光 ----
+  .ant-switch,
+  .ant-switch .ant-switch-inner,
+  .ant-switch .ant-switch-handle::before {
+    border-radius: 0;
+  }
+  .ant-switch.ant-switch-checked {
+    box-shadow: neon-glow(8px, 0.35);
+  }
+  .ant-switch.ant-switch-checked .ant-switch-handle::before {
+    background-color: #030603;
+  }
+  // 开关里的文字（系统配置「边栏风格」的亮 / 暗）：antd 是白字，打开时压在霓虹绿上看不清
+  .ant-switch .ant-switch-inner .ant-switch-inner-checked {
+    color: #030603;
+  }
+  .ant-switch .ant-switch-inner .ant-switch-inner-unchecked {
+    color: var(--ant-color-text);
+  }
+
+  // ---- 分页、标签页：选中项发光 ----
+  // 当前页的数字：antd 的颜色被 Bootstrap 的 a:not([href]):not([class]) { color: inherit } 压住，是正文色
+  .ant-pagination .ant-pagination-item-active {
+    box-shadow: neon-glow(8px, 0.35);
+  }
+  .ant-pagination .ant-pagination-item-active a {
+    color: var(--ant-color-primary);
+  }
+  .ant-pagination .ant-pagination-item-active:hover a {
+    color: var(--ant-color-primary-hover);
+  }
+  .ant-tabs .ant-tabs-tab.ant-tabs-tab-active {
+    text-shadow: var(--v2b-glow-text);
+  }
+  .ant-tabs .ant-tabs-ink-bar {
+    box-shadow: neon-glow(6px, 0.6);
+  }
+
+  // ---- 分隔线 ----
+  // 竖分隔线（操作列的「编辑 | 删除」、手机列表的操作之间）只有十几像素高，用暗色的细线看不见，改用描边色
+  .ant-divider-vertical {
+    border-inline-start-color: var(--v2b-line);
+  }
+  .ant-list-item-action-split {
+    background-color: var(--v2b-line);
+  }
+  // 下拉列表的滚动条滑块：虚拟列表在行内样式里写了圆角；颜色与页面的滚动条相同
+  .ant-select-dropdown .ant-select-dropdown-list-scrollbar-thumb {
+    background: var(--v2b-line) !important;
+    border-radius: 0 !important;
+  }
+  // 展开下拉时框里的当前值：antd 降到 25% 透明度，绿灰的正文只剩 1.8:1（选择器与 antd 相同，这里在后面生效）
+  .ant-select-single:not(.ant-select-customize).ant-select-open .ant-select-content-has-value {
+    opacity: 0.5;
+  }
+
+  // ---- 节点配置的代码编辑器（tomorrow_night）：文字、行号用皮肤的正文色（主题自带的是中性灰；语法色保留）----
+  .ant-drawer .ace-tomorrow-night {
+    color: var(--ant-color-text);
+  }
+  .ant-drawer .ace-tomorrow-night .ace_gutter {
+    color: var(--ant-color-text-secondary);
+  }
+  // 编辑器为空时的示例（占位文字带 ace_comment，用的是主题的注释色）
+  .ant-drawer .ace-tomorrow-night .ace_comment {
+    color: var(--ant-color-text-secondary);
+  }
+}

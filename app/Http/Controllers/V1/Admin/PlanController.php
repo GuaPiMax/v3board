@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Plan;
 use App\Models\User;
 use App\Services\PlanService;
+use App\Services\ExternalSubscription\PlanBindings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,7 @@ class PlanController extends Controller
     {
         $counts = PlanService::countActiveUsers();
         $plans = Plan::orderBy('sort', 'ASC')->get();
+        PlanBindings::attachToPlans($plans);
         foreach ($plans as $k => $v) {
             $plans[$k]->count = 0;
             foreach ($counts as $kk => $vv) {
@@ -33,12 +35,22 @@ class PlanController extends Controller
     public function save(PlanSave $request)
     {
         $params = $request->validated();
+        $bindingIds = $params['external_subscription_ids'] ?? null;
+        $bindingToken = $params['external_binding_token'] ?? null;
+        unset($params['external_subscription_ids'], $params['external_binding_token']);
         if ($request->input('id')) {
             $plan = Plan::find($request->input('id'));
             if (!$plan) {
                 abort(500, '该订阅不存在');
             }
             DB::beginTransaction();
+            // Validate binding conflicts before updating the plan or its users.
+            try {
+                if ($bindingIds !== null) PlanBindings::save($plan->id, $bindingIds, $bindingToken);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
+            }
             // update user group id and transfer
             try {
                 if ($request->input('force_update')) {
@@ -59,9 +71,11 @@ class PlanController extends Controller
                 'data' => true
             ]);
         }
-        if (!Plan::create($params)) {
-            abort(500, '创建失败');
-        }
+        DB::transaction(function () use ($params, $bindingIds) {
+            $plan = Plan::create($params);
+            if (!$plan) abort(500, '创建失败');
+            if ($bindingIds !== null) PlanBindings::save($plan->id, $bindingIds, null, true);
+        });
         return response([
             'data' => true
         ]);
@@ -81,9 +95,13 @@ class PlanController extends Controller
                 abort(500, '该订阅ID不存在');
             }
         }
-        return response([
-            'data' => $plan->delete()
-        ]);
+        return DB::transaction(function () use ($plan) {
+            DB::table('v2_external_subscription')->orderBy('id')->lockForUpdate()->get(['id']);
+            $ids = DB::table('v2_external_subscription_plan')->where('plan_id', $plan->id)->pluck('subscription_id')->all();
+            DB::table('v2_external_subscription_plan')->where('plan_id', $plan->id)->delete();
+            DB::table('v2_external_subscription')->whereIn('id', $ids)->increment('revision');
+            return response(['data' => $plan->delete()]);
+        });
     }
 
     public function update(PlanUpdate $request)

@@ -51,7 +51,22 @@ try {
     $update=new App\Console\Commands\V2boardUpdate();$update->setLaravel($app);$update->setApplication((new ReflectionMethod($kernel,'getArtisan'))->invoke($kernel));
     for($i=0;$i<2;$i++)if($update->run(new Symfony\Component\Console\Input\ArrayInput([]),$buffer)!==0)throw new RuntimeException('Update failed: '.$buffer->fetch());
     if(Illuminate\Support\Facades\DB::table('v2_stat_user')->count()!==1)throw new RuntimeException('Update removed current traffic statistics');
-    echo 'PASS: MySQL-compatible fresh SQL import, external migration, admin creation, config cache, environment round-trip, reinstall refusal and repeated SQL update ('.count(Illuminate\Support\Facades\DB::select('SHOW TABLES'))." tables)\n";
+    // Exercise plan binding transactions against the actual MySQL-compatible schema.
+    $plan=App\Models\Plan::create(['name'=>'Binding fixture','group_id'=>1,'transfer_enable'=>10]);
+    $source=Illuminate\Support\Facades\DB::table('v2_external_subscription')->insertGetId(['name'=>'Fixture','url'=>Illuminate\Support\Facades\Crypt::encryptString('https://example.com/sub'),'updated_at'=>time()]);
+    Illuminate\Support\Facades\DB::transaction(fn()=>App\Services\ExternalSubscription\PlanBindings::save($plan->id,[$source],null,true));
+    $rows=collect([$plan]);App\Services\ExternalSubscription\PlanBindings::attachToPlans($rows);
+    if($plan->external_subscription_ids!==[$source])throw new RuntimeException('MySQL binding fetch failed');
+    $token=$plan->external_binding_token;
+    Illuminate\Support\Facades\DB::transaction(fn()=>App\Services\ExternalSubscription\PlanBindings::save($plan->id,[],$token));
+    try {
+        Illuminate\Support\Facades\DB::transaction(fn()=>App\Services\ExternalSubscription\PlanBindings::save($plan->id,[$source],$token));
+        throw new RuntimeException('MySQL stale binding edit accepted');
+    } catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        if($e->getStatusCode()!==409)throw $e;
+    }
+    if(Illuminate\Support\Facades\DB::table('v2_external_subscription_plan')->count()!==0)throw new RuntimeException('MySQL conflict rollback failed');
+    echo 'PASS: MySQL-compatible fresh SQL import, external migration, admin creation, config cache, environment round-trip, reinstall refusal, repeated SQL update and binding conflict transactions ('.count(Illuminate\Support\Facades\DB::select('SHOW TABLES'))." tables)\n";
 } catch (\Throwable $e) {
     fwrite(STDERR,(string)$e . "\n");$failed=true;
 } finally {

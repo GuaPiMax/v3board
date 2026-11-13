@@ -1,0 +1,256 @@
+// 由 tools/css-extract/themes.mjs 从原版 theme/green.css 生成（仅管理端用到的规则），请勿手改。
+:where(html[data-v2b-color='green']) body {
+  color: rgba(0,0,0,0.65);
+  font-size: 14px;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  font-variant: tabular-nums;
+  line-height: 1.5;
+  background-color: #fff;
+  font-feature-settings: "tnum";
+}
+:where(html[data-v2b-color='green']) h1,
+:where(html[data-v2b-color='green']) h2,
+:where(html[data-v2b-color='green']) h3,
+:where(html[data-v2b-color='green']) h4,
+:where(html[data-v2b-color='green']) h5,
+:where(html[data-v2b-color='green']) h6 {
+  color: rgba(0,0,0,0.85);
+}
+:where(html[data-v2b-color='green']) a {
+  color: #319795;
+}
+:where(html[data-v2b-color='green']) a:hover {
+  color: #4ea39f;
+}
+:where(html[data-v2b-color='green']) a:active {
+  color: #1e6f70;
+}
+:where(html[data-v2b-color='green']) ::selection {
+  color: #fff;
+  background: #319795;
+}
+html:where([data-v2b-color='green']) {
+  --antd-wave-shadow-color: #319795;
+}
+:where(html[data-v2b-color='green']) body {
+  color: #495057;
+  background-color: #f5f5f5;
+}
+:where(html[data-v2b-color='green']) a {
+  color: #319795;
+}
+:where(html[data-v2b-color='green']) a.link-fx::before {
+  background-color: #319795;
+}
+:where(html[data-v2b-color='green']) a:hover {
+  color: #184a49;
+}
+:where(html[data-v2b-color='green']) .h1,
+:where(html[data-v2b-color='green']) .h2,
+:where(html[data-v2b-color='green']) .h3,
+:where(html[data-v2b-color='green']) .h4,
+:where(html[data-v2b-color='green']) .h5,
+:where(html[data-v2b-color='green']) .h6,
+:where(html[data-v2b-color='green']) h1,
+:where(html[data-v2b-color='green']) h2,
+:where(html[data-v2b-color='green']) h3,
+:where(html[data-v2b-color='green']) h4,
+:where(html[data-v2b-color='green']) h5,
+:where(html[data-v2b-color='green']) h6 {
+  color: #212529;
+}
+:where(html[data-v2b-color='green']) hr {
+  border-top-color: #ebebeb;
+}
+:where(html[data-v2b-color='green']) .text-primary {
+  color: #319795 !important;
+}
+:where(html[data-v2b-color='green']) a.text-primary.link-fx::before {
+  background-color: #319795;
+}
+:where(html[data-v2b-color='green']) a.text-primary:focus,
+:where(html[data-v2b-color='green']) a.text-primary:hover {
+  color: #184a49 !important;
+}
+:where(html[data-v2b-color='green']) .bg-primary {
+  background-color: #319795 !important;
+}
+:where(html[data-v2b-color='green']) a.bg-primary:focus,
+:where(html[data-v2b-color='green']) a.bg-primary:hover,
+:where(html[data-v2b-color='green']) button.bg-primary:focus,
+:where(html[data-v2b-color='green']) button.bg-primary:hover {
+  background-color: #25706f !important;
+}
+:where(html[data-v2b-color='green']) .bg-body-dark {
+  background-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='green']) a.bg-body-dark:focus,
+:where(html[data-v2b-color='green']) a.bg-body-dark:hover,
+:where(html[data-v2b-color='green']) button.bg-body-dark:focus,
+:where(html[data-v2b-color='green']) button.bg-body-dark:hover {
+  background-color: #d1d1d1 !important;
+}
+:where(html[data-v2b-color='green']) .bg-header-dark {
+  background-color: #319795 !important;
+}
+:where(html[data-v2b-color='green']) a.bg-header-dark:focus,
+:where(html[data-v2b-color='green']) a.bg-header-dark:hover,
+:where(html[data-v2b-color='green']) button.bg-header-dark:focus,
+:where(html[data-v2b-color='green']) button.bg-header-dark:hover {
+  background-color: #25706f !important;
+}
+:where(html[data-v2b-color='green']) .btn-primary {
+  color: #fff;
+  background-color: #319795;
+  border-color: #319795;
+}
+:where(html[data-v2b-color='green']) .btn-primary:hover {
+  color: #fff;
+  background-color: #287a79;
+  border-color: #25706f;
+}
+:where(html[data-v2b-color='green']) .btn-primary:focus {
+  color: #fff;
+  background-color: #287a79;
+  border-color: #25706f;
+  box-shadow: 0 0 0 .2rem rgba(80,167,165,.5);
+}
+:where(html[data-v2b-color='green']) .btn-primary:disabled {
+  color: #fff;
+  background-color: #319795;
+  border-color: #319795;
+}
+:where(html[data-v2b-color='green']) .dropdown-menu {
+  border-color: #ebebeb;
+}
+:where(html[data-v2b-color='green']) .dropdown-item {
+  color: #495057;
+}
+:where(html[data-v2b-color='green']) .dropdown-item:focus,
+:where(html[data-v2b-color='green']) .dropdown-item:hover {
+  color: #212529;
+  background-color: #f5f5f5;
+}
+:where(html[data-v2b-color='green']) .dropdown-item.active,
+:where(html[data-v2b-color='green']) .dropdown-item:active {
+  color: #fff;
+  background-color: #319795;
+}
+:where(html[data-v2b-color='green']) .table td,
+:where(html[data-v2b-color='green']) .table th {
+  border-top-color: #ebebeb;
+}
+:where(html[data-v2b-color='green']) .table thead th {
+  border-bottom-color: #ebebeb;
+}
+:where(html[data-v2b-color='green']) .table tbody+tbody {
+  border-top-color: #ebebeb;
+}
+:where(html[data-v2b-color='green']) .form-control {
+  color: #495057;
+  background-color: #fff;
+  border-color: #e1e1e1;
+}
+:where(html[data-v2b-color='green']) .form-control:focus {
+  color: #212529;
+  background-color: #fff;
+  border-color: #3dbebb;
+  box-shadow: 0 0 0 .2rem rgba(49,151,149,.25);
+}
+:where(html[data-v2b-color='green']) .form-control:disabled,
+:where(html[data-v2b-color='green']) .form-control[readonly] {
+  background-color: #e9ecef;
+}
+:where(html[data-v2b-color='green']) select.form-control:focus::-ms-value {
+  color: #495057;
+  background-color: #fff;
+}
+:where(html[data-v2b-color='green']) .form-control.form-control-alt {
+  border-color: #f5f5f5;
+  background-color: #f5f5f5;
+}
+:where(html[data-v2b-color='green']) .form-control.form-control-alt:focus {
+  border-color: #ebebeb;
+  background-color: #ebebeb;
+  box-shadow: none;
+}
+:where(html[data-v2b-color='green']) .border {
+  border-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='green']) .border-right {
+  border-right-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='green']) .border-bottom {
+  border-bottom-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='green']) #page-header {
+  background-color: #fff;
+}
+:where(html[data-v2b-color='green']) #sidebar {
+  background-color: #fff;
+}
+:where(html[data-v2b-color='green']) #page-container.page-header-dark #page-header {
+  color: #d6d6d6;
+  background-color: #319795;
+}
+:where(html[data-v2b-color='green']) #page-container.sidebar-dark #sidebar {
+  color: #ebebeb;
+  background-color: #35393e;
+}
+:where(html[data-v2b-color='green']) .block {
+  box-shadow: 0 1px 3px rgba(228,228,228,.5),0 1px 2px rgba(228,228,228,.5);
+}
+:where(html[data-v2b-color='green']) .block-header-default {
+  background-color: #fafafa;
+}
+:where(html[data-v2b-color='green']) .block.block-bordered {
+  border-color: #ebebeb;
+}
+:where(html[data-v2b-color='green']) a.block {
+  color: #495057;
+}
+:where(html[data-v2b-color='green']) a.block:hover {
+  color: #495057;
+}
+:where(html[data-v2b-color='green']) a.block.block-link-pop:hover {
+  box-shadow: 0 .5rem 2rem #e1e1e1;
+}
+:where(html[data-v2b-color='green']) a.block.block-link-pop:active {
+  box-shadow: 0 .25rem .75rem #f2f2f2;
+}
+:where(html[data-v2b-color='green']) .block.block-fx-pop {
+  box-shadow: 0 .5rem 2rem #e1e1e1;
+}
+:where(html[data-v2b-color='green']) .nav-main-heading {
+  color: #869099;
+}
+:where(html[data-v2b-color='green']) .nav-main-link {
+  color: #555d65;
+}
+:where(html[data-v2b-color='green']) .nav-main-link .nav-main-link-icon {
+  color: rgba(49,151,149,.7);
+}
+:where(html[data-v2b-color='green']) .nav-main-link.active,
+:where(html[data-v2b-color='green']) .nav-main-link:hover {
+  color: #000;
+  background-color: #ebebeb;
+}
+:where(html[data-v2b-color='green']) .page-header-dark #page-header .nav-main-heading,
+:where(html[data-v2b-color='green']) .sidebar-dark #sidebar .nav-main-heading {
+  color: #7d858f;
+}
+:where(html[data-v2b-color='green']) .page-header-dark #page-header .nav-main-link,
+:where(html[data-v2b-color='green']) .sidebar-dark #sidebar .nav-main-link {
+  color: #c1c5ca;
+}
+:where(html[data-v2b-color='green']) .page-header-dark #page-header .nav-main-link>.nav-main-link-icon,
+:where(html[data-v2b-color='green']) .sidebar-dark #sidebar .nav-main-link>.nav-main-link-icon {
+  color: #646c75;
+}
+:where(html[data-v2b-color='green']) .page-header-dark #page-header .nav-main-link.active,
+:where(html[data-v2b-color='green']) .page-header-dark #page-header .nav-main-link:hover,
+:where(html[data-v2b-color='green']) .sidebar-dark #sidebar .nav-main-link.active,
+:where(html[data-v2b-color='green']) .sidebar-dark #sidebar .nav-main-link:hover {
+  color: #fff;
+  background-color: #2a2e32;
+}

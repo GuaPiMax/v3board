@@ -1,0 +1,13 @@
+// 四套主题色（相当于原版最后加载的 theme/<color>.css），由 <html data-v2b-color="..."> 切换
+@import 'default';
+@import 'black';
+@import 'darkblue';
+@import 'green';
+
+// 有意修正：原版只有 green 的 theme/green.css 带了 antd 3 的 body 规则，正文是 14px、antd 3 的字体
+//（明确列出 PingFang SC 等中文字体）；default / black / darkblue 是 umi.css 的 1rem（16px）与 Inter 开头的字体。
+// 四套主题色统一成：字号用 green 的 14px，字体用其余三套的（green 的字体中文显得宽）；文字颜色等其余属性不变
+body {
+  font-size: 14px;
+  font-family: $font-family-base;
+}

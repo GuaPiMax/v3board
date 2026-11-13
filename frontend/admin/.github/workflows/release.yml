@@ -1,0 +1,40 @@
+# 发布 Release（包括预发布）时：在 tag 对应的提交上检查并构建，把 dist/ 打包成 dist.tar.gz 附加到这个 Release。
+# 构建时不设 V2B_* 变量，dist/config.js 是示例配置，下载后修改即可。失败时在 Actions 页面重跑，已上传的文件会被覆盖。
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  dist:
+    runs-on: ubuntu-latest
+    permissions:
+      # 上传 Release 附件
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      # pnpm 的版本取 package.json 的 packageManager
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      # 解压后得到 dist/ 目录，文件保留构建时的修改时间；属主记为 root（以 root 解压时不会带上构建机的用户 id）
+      - name: Pack dist.tar.gz
+        run: |
+          tar --owner=0 --group=0 --numeric-owner -czf dist.tar.gz dist
+          sha256sum dist.tar.gz > dist.tar.gz.sha256
+          cat dist.tar.gz.sha256
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" dist.tar.gz dist.tar.gz.sha256 --clobber --repo "$GITHUB_REPOSITORY"

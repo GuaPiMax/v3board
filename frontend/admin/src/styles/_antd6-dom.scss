@@ -1,0 +1,50 @@
+// 页面按原版 DOM、原版样式（v2board.scss、Dashmix）写，在 antd 6 下出问题的地方（错位、换行、间距）。
+// 皮肤（antd 6 观感）需要，在 skins/index.scss 里引入。
+// legacy 下对应的修正在 antd3-compat.scss。这里只定义 mixin，不输出样式
+
+// 图标：原版的 .anticon { vertical-align: .1em }（v2board.scss）按 antd 3 的行内块图标写；antd 6 的图标是 inline-flex，
+// 以 svg 底边为基线，同样的偏移让和文字排在一行的图标比文字高约 3px（如节点「人数」、表头的问号、「操作 ▾」的箭头）。
+// 恢复 antd 6 的默认值
+@mixin antd6-icon {
+  .anticon {
+    vertical-align: -0.125em;
+  }
+}
+
+// 只包含一个图标（作为子元素，而不是 icon 属性）的按钮，如节点管理的「+」：antd 6 的按钮是 inline-flex，
+// 基线落在图标底边，同一行的输入框会比它低 2px、整行撑高 2px（legacy 改回行内块，见 antd3-compat.scss）。
+// 顶端对齐，按钮内部仍按 antd 6 的方式居中
+@mixin antd6-icon-button {
+  .ant-btn:has(> .anticon:only-child) {
+    vertical-align: top;
+  }
+}
+
+// 抽屉的标题栏与内容区内边距 15px：这是原版自己的样式（umi.css 的 .ant-drawer-header / .ant-drawer-body，
+// antd 3 默认是 24px），legacy 在 antd3-compat.scss 里补回。antd 6 的同名规则优先级更高，原版的覆盖不生效，
+// 内容区窄 18px：表单标签折行（如节点「HYSTERIA版本」，下面的表单项被推到操作栏下）、占位文字被截断，内容整体下移。
+// 标题栏因此也与原版一样高 55px（节点「编辑协议配置」的编辑器按这个高度定位，见 v2board.scss 的 #ace-editor）
+@mixin antd6-drawer {
+  .ant-drawer .ant-drawer-header,
+  .ant-drawer .ant-drawer-body {
+    padding: 15px;
+  }
+  // 抽屉底部的操作栏（.v2board-drawer-action，原版样式固定在抽屉底部、高 53px）：antd 6 的内容区一直延伸到抽屉底部，
+  // 滚到底时最后一项仍被操作栏盖住。与原版（.ant-drawer-body 的 margin-bottom）一样给内容区留出操作栏的高度
+  .ant-drawer .ant-drawer-body:has(.v2board-drawer-action) {
+    margin-bottom: 53px;
+  }
+}
+
+// 表格固定在右侧的列（「操作」等）不换行：antd 6 按表格宽度分配列宽，列多时（如订阅管理）「操作 ▾」会折成两行
+@mixin antd6-fixed-end {
+  .ant-table-cell.ant-table-cell-fix-end {
+    white-space: nowrap;
+  }
+  // 需要横向滚动时（V2Table 给外层加 v2b-fix-end-overlay）固定列按内容宽度显示，与 antd 3 的固定列覆盖层相同：
+  // 表格被 scroll.x 撑宽后，antd 6 把多出的宽度也分给固定列，手机上它盖住前面的列（如公告的标题、优惠券的类型）。
+  // 不需要滚动时保持 antd 6 的列宽（与原版相同）；列设置的 width（如节点管理的 100px）仍然是最小宽度
+  .v2b-table.v2b-fix-end-overlay .ant-table-cell.ant-table-cell-fix-end {
+    width: 1px;
+  }
+}

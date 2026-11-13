@@ -1,0 +1,147 @@
+// antd 3 列表（List）样式（MIT，取自原版 components.chunk.css），配合 components/LegacyList.tsx 使用。
+// 只保留纵向布局（itemLayout="vertical"）+ 分隔线用到的规则
+.ant-list {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+  font-variant: tabular-nums;
+  line-height: 1.5;
+  list-style: none;
+  font-feature-settings: 'tnum';
+  position: relative;
+}
+.ant-list * {
+  outline: none;
+}
+// antd 3 Spin 的包裹层（antd 6.6 的 Spin 不再使用这个类名）
+.ant-list .ant-spin-nested-loading {
+  position: relative;
+}
+.ant-list-empty-text {
+  padding: 16px;
+  color: rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+  text-align: center;
+}
+.ant-list-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ant-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+.ant-list-item-meta {
+  display: flex;
+  flex: 1 1;
+  align-items: flex-start;
+  font-size: 0;
+}
+.ant-list-item-meta-content {
+  flex: 1 0;
+}
+.ant-list-item-meta-title {
+  margin-bottom: 4px;
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+  line-height: 22px;
+}
+.ant-list-item-meta-description {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  line-height: 22px;
+}
+.ant-list-item-action {
+  flex: 0 0 auto;
+  margin-left: 48px;
+  padding: 0;
+  font-size: 0;
+  list-style: none;
+}
+.ant-list-item-action > li {
+  position: relative;
+  display: inline-block;
+  padding: 0 8px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+}
+.ant-list-item-action > li:first-child {
+  padding-left: 0;
+}
+.ant-list-item-action-split {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 1px;
+  height: 14px;
+  margin-top: -7px;
+  background-color: #e8e8e8;
+}
+.ant-list-split .ant-list-item {
+  border-bottom: 1px solid #e8e8e8;
+}
+.ant-list-split .ant-list-item:last-child {
+  border-bottom: none;
+}
+.ant-list-vertical .ant-list-item {
+  align-items: normal;
+}
+.ant-list-vertical .ant-list-item-main {
+  display: block;
+  flex: 1 1;
+}
+.ant-list-vertical .ant-list-item-extra {
+  margin-left: 40px;
+}
+.ant-list-vertical .ant-list-item-meta {
+  margin-bottom: 16px;
+}
+.ant-list-vertical .ant-list-item-meta-title {
+  margin-bottom: 12px;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 16px;
+  line-height: 24px;
+}
+.ant-list-vertical .ant-list-item-action {
+  margin-top: 16px;
+  margin-left: auto;
+}
+.ant-list-vertical .ant-list-item-action > li {
+  padding: 0 16px;
+}
+.ant-list-vertical .ant-list-item-action > li:first-child {
+  padding-left: 0;
+}
+@media screen and (max-width: 768px) {
+  .ant-list-item-action {
+    margin-left: 24px;
+  }
+  .ant-list-vertical .ant-list-item-extra {
+    margin-left: 24px;
+  }
+}
+@media screen and (max-width: 576px) {
+  .ant-list-item {
+    flex-wrap: wrap;
+  }
+  .ant-list-item-action {
+    margin-left: 12px;
+  }
+  .ant-list-vertical .ant-list-item {
+    flex-wrap: wrap-reverse;
+  }
+  .ant-list-vertical .ant-list-item-main {
+    min-width: 220px;
+  }
+  .ant-list-vertical .ant-list-item-extra {
+    margin: auto auto 16px;
+  }
+}

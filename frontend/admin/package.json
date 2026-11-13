@@ -1,0 +1,78 @@
+{
+  "name": "v2board-admin",
+  "private": true,
+  "version": "0.1.0",
+  "description": "V2Board 管理端（React 19 + antd 6，前后端分离，像素级还原原版）",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "oxlint",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "umi:extract": "node tools/umi-extract/extract.mjs",
+    "visual:capture": "node tools/visual-diff/capture.mjs",
+    "visual:diff": "node tools/visual-diff/diff.mjs"
+  },
+  "dependencies": {
+    "@ant-design/colors": "8.0.1",
+    "@ant-design/icons": "6.3.4",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@fortawesome/fontawesome-free": "5.15.4",
+    "@tanstack/react-query": "^5.103.2",
+    "ace-builds": "^1.44.0",
+    "antd": "6.6.5",
+    "copy-to-clipboard": "^4.0.2",
+    "darkreader": "^4.9.132",
+    "dayjs": "^1.11.23",
+    "echarts": "6.1.0",
+    "markdown-it": "^15.0.3",
+    "react": "19.3.0",
+    "react-ace": "^15.0.0",
+    "react-dom": "19.3.0",
+    "react-markdown-editor-lite": "^1.4.2",
+    "react-router": "8.4.0",
+    "simple-line-icons": "2.5.5",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.2.0",
+    "@types/node": "^24.13.6",
+    "@types/pngjs": "^6.0.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "bootstrap": "4.6.2",
+    "oxlint": "^1.85.0",
+    "oxlint-tsgolint": "^7.0.2002",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
+    "postcss": "^8.5.28",
+    "prettier": "^3.9.9",
+    "puppeteer-core": "^25.17.0",
+    "sass-embedded": "^1.105.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.3",
+    "vitest": "^5.0.3"
+  },
+  "cloudflare": {
+    "bindings": {
+      "V2B_API_HOST": {
+        "description": "V2Board 后端地址，不带 `/api/v1`，例如 `https://api.example.com`。后端不用改动，跨域请求本来就放行。"
+      },
+      "V2B_SECURE_PATH": {
+        "description": "后台路径，与 V2Board 后台「系统配置 → 安全 → 后台路径」一致。"
+      }
+    }
+  }
+}

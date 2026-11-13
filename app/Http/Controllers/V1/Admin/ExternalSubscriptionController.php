@@ -46,6 +46,8 @@ class ExternalSubscriptionController extends Controller
             }
             if (isset($id)) DB::table('v2_external_subscription')->where('id', $id)->update($values);
             else $id = DB::table('v2_external_subscription')->insertGetId($values);
+            // Recheck after acquiring the source lock: a plan may have been deleted while waiting.
+            if (DB::table('v2_plan')->whereIn('id', $data['plan_ids'])->count() !== count($data['plan_ids'])) abort(422, '套餐已删除，请重新选择');
             DB::table('v2_external_subscription_plan')->where('subscription_id', $id)->delete();
             foreach ($data['plan_ids'] as $planId) DB::table('v2_external_subscription_plan')->insert(['subscription_id' => $id, 'plan_id' => $planId]);
             return ['data' => ['id' => $id]];

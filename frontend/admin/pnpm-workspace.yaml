@@ -1,0 +1,9 @@
+overrides:
+  'react-markdown-editor-lite>nanoid': '5.1.16'
+
+# pnpm 11：依赖的安装脚本默认不执行，这里显式声明
+allowBuilds:
+  # 只是打印署名信息的 postinstall，不需要执行
+  '@fortawesome/fontawesome-free': false
+  # sass 命令行 --watch 用的文件监视（打包用不到）；各平台都有预编译包，安装脚本只在缺预编译包时才从源码编译
+  '@parcel/watcher': false

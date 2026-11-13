@@ -113,7 +113,7 @@ FAIL 项目应先排查。此命令只检查 CLI，PHP-FPM/Nginx、Supervisor �
 
 访问安装器输出的后台路径，登录并修改管理员密码，在系统设置中保存正确 HTTPS 站点地址。创建测试套餐。
 
-第三方订阅管理： https://console.v3board.top/你的后台路径/external-subscriptions 。新增来源、绑定套餐、手动同步，用有效测试用户导入常用客户端并验证连接。
+第三方订阅管理已整合到原后台「服务器 → 第三方订阅」，无需再次登录。套餐编辑页也可多选绑定来源。新增来源后手动同步，用有效测试用户导入常用客户端并验证连接。
 
 ```bash
 su -s /bin/bash www -c 'cd /www/wwwroot/console.v3board.top && /www/server/php/84/bin/php artisan horizon:status'

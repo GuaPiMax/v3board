@@ -1,0 +1,4 @@
+dist
+.umi-src
+pnpm-lock.yaml
+tools/visual-diff/out

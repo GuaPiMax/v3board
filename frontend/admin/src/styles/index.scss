@@ -1,0 +1,18 @@
+// 样式层顺序与原版一致：
+//   antd 3 基础样式（components.chunk.css）→ Bootstrap / Dashmix / 图标 / v2board 覆盖（umi.css）
+//   → 主题色（theme/<color>.css，最后加载）→ antd 6 兼容层
+// antd 6 的 CSS-in-JS 插在 <head> 最前面，同优先级时这里的规则生效（与原版 antd 3 在最前一致）。
+@import 'antd3-base';
+@import 'bootstrap';
+@import 'dashmix/index';
+@import 'icons';
+@import 'v2board';
+@import 'themes/index';
+// 共用的 mixin（不输出样式）：antd3-dom 供 antd3-compat 与皮肤引入，antd6-dom 供皮肤引入
+@import 'antd3-dom';
+@import 'antd6-dom';
+@import 'antd3-compat';
+// 顶栏的界面风格切换（原版没有，各预设共用；只作用于 .v2b-ui-switch 里的元素）
+@import 'ui-switch';
+// 皮肤（legacy 不生效），放在最后（css-prefix.mjs 检查新增的规则都追加在末尾、都在皮肤作用域里）
+@import 'skins/index';

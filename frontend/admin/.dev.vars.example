@@ -1,0 +1,19 @@
+# Cloudflare Workers 部署的变量：README 的「Deploy to Cloudflare」按钮在部署页面上让你填写下面两项（保存为 Worker 的机密），
+# 之后在 Worker 的「设置 → 变量和机密」里修改，立即生效。本地用 wrangler dev 调试时复制为 .dev.vars（已加入 .gitignore）。
+
+# V2Board 后端地址，不带 /api/v1
+V2B_API_HOST=https://api.example.com
+# 后台路径，与后端「系统配置 → 安全 → 后台路径」一致
+V2B_SECURE_PATH=admin
+
+# 以下可选，需要时在 Worker 的「设置 → 变量和机密」里添加（含义同 public/config.example.js）：
+# V2B_TITLE=V2Board
+# V2B_LOGO=https://example.com/logo.png
+# V2B_BACKGROUND_URL=https://example.com/background.jpg
+# V2B_THEME_SIDEBAR=light
+# V2B_THEME_HEADER=dark
+# V2B_THEME_COLOR=default
+# 公开演示站：登录页预填并显示演示账号，顶栏标题旁显示提示（正式部署不要设置）
+# V2B_DEMO_EMAIL=admin@example.com
+# V2B_DEMO_PASSWORD=
+# V2B_DEMO_NOTICE=演示站 · 数据每小时整点复原

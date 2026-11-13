@@ -165,9 +165,10 @@ check(api('POST',$prefix.'save',$adminToken,$data)->getStatusCode()===422,'Nonex
 check(api('POST',$prefix.'drop',$memberToken,['id'=>$id])->getStatusCode()===403,'Ordinary user cannot delete');
 check(api('POST',$prefix.'drop',$adminToken,['id'=>$id])->getStatusCode()===200,'Admin delete');
 check(DB::table('v2_external_subscription_plan')->where('subscription_id',$id)->count()===0,'Delete cleans bindings');
-$html=view('external-subscriptions',['adminPath'=>'test-admin'])->render();
-check(strpos($html,'@json')===false && strpos($html,'const adminPath = "test-admin"')!==false,'Real Blade template renders');
-check(strpos($html,'localStorage')===false && strpos($html,'innerHTML')===false,'UI avoids persistent tokens and HTML injection sinks');
+$adminPath=explode('/',trim($routePath,'/'))[2]; // Routes were registered before this fixture changes config.
+$redirect=api('GET','/'.$adminPath.'/external-subscriptions');
+check($redirect->getStatusCode()===302,'Legacy page redirects to main admin');
+check($redirect->headers->get('Location')==='http://localhost/'.config('v2board.secure_path').'#/external-subscriptions','Legacy page retains configured admin path');
 // Optional baseline comparison against the pre-change Git revision exported into _demo/baseline.
 if (is_dir(__DIR__.'/../_demo/baseline')) {
     $nativeNodes=array_map(function($node){foreach(array_keys($node) as $key) if($key==='external'||strpos($key,'external_')===0) unset($node[$key]);$node+=['obfs'=>null];return $node;},$nodes);

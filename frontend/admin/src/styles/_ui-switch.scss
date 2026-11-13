@@ -1,0 +1,41 @@
+// 顶栏的界面风格切换（layouts/UiSwitch.tsx，原版没有）。菜单外框用各预设已有的 .dropdown-menu 样式（跟随当前风格）；
+// 选项卡片的颜色、描边、阴影写在行内（各自的风格），这里只管排版与交互，各预设共用。
+// 悬停、聚焦的外框用当前风格的主色（卡片外侧，在当前风格的菜单上）
+.v2b-ui-switch {
+  .dropdown-menu {
+    min-width: 11rem;
+  }
+
+  .v2b-ui-option {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    text-align: left;
+    cursor: pointer;
+
+    & + .v2b-ui-option {
+      margin-top: 0.5rem;
+    }
+
+    &:hover,
+    &:focus-visible {
+      outline: 2px solid var(--ant-color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  .v2b-ui-option-accent {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .v2b-ui-option-label {
+    flex: auto;
+  }
+}

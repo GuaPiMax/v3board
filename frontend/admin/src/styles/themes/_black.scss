@@ -1,0 +1,247 @@
+// 由 tools/css-extract/themes.mjs 从原版 theme/black.css 生成（仅管理端用到的规则），请勿手改。
+:where(html[data-v2b-color='black']) body {
+  color: #495057;
+  background-color: #f5f5f5;
+}
+:where(html[data-v2b-color='black']) a {
+  color: #0665d0;
+}
+:where(html[data-v2b-color='black']) a.link-fx::before {
+  background-color: #0665d0;
+}
+:where(html[data-v2b-color='black']) a:hover {
+  color: #03356d;
+}
+:where(html[data-v2b-color='black']) .h1,
+:where(html[data-v2b-color='black']) .h2,
+:where(html[data-v2b-color='black']) .h3,
+:where(html[data-v2b-color='black']) .h4,
+:where(html[data-v2b-color='black']) .h5,
+:where(html[data-v2b-color='black']) .h6,
+:where(html[data-v2b-color='black']) h1,
+:where(html[data-v2b-color='black']) h2,
+:where(html[data-v2b-color='black']) h3,
+:where(html[data-v2b-color='black']) h4,
+:where(html[data-v2b-color='black']) h5,
+:where(html[data-v2b-color='black']) h6 {
+  color: #212529;
+}
+:where(html[data-v2b-color='black']) hr {
+  border-top-color: #ebebeb;
+}
+:where(html[data-v2b-color='black']) .text-primary {
+  color: #343a40 !important;
+}
+:where(html[data-v2b-color='black']) a.text-primary.link-fx::before {
+  background-color: #343a40;
+}
+:where(html[data-v2b-color='black']) a.text-primary:focus,
+:where(html[data-v2b-color='black']) a.text-primary:hover {
+  color: #060708 !important;
+}
+:where(html[data-v2b-color='black']) .bg-primary {
+  background-color: #343a40 !important;
+}
+:where(html[data-v2b-color='black']) a.bg-primary:focus,
+:where(html[data-v2b-color='black']) a.bg-primary:hover,
+:where(html[data-v2b-color='black']) button.bg-primary:focus,
+:where(html[data-v2b-color='black']) button.bg-primary:hover {
+  background-color: #1d2124 !important;
+}
+:where(html[data-v2b-color='black']) .bg-body-dark {
+  background-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='black']) a.bg-body-dark:focus,
+:where(html[data-v2b-color='black']) a.bg-body-dark:hover,
+:where(html[data-v2b-color='black']) button.bg-body-dark:focus,
+:where(html[data-v2b-color='black']) button.bg-body-dark:hover {
+  background-color: #d1d1d1 !important;
+}
+:where(html[data-v2b-color='black']) .bg-header-dark {
+  background-color: #343a40 !important;
+}
+:where(html[data-v2b-color='black']) a.bg-header-dark:focus,
+:where(html[data-v2b-color='black']) a.bg-header-dark:hover,
+:where(html[data-v2b-color='black']) button.bg-header-dark:focus,
+:where(html[data-v2b-color='black']) button.bg-header-dark:hover {
+  background-color: #1d2124 !important;
+}
+:where(html[data-v2b-color='black']) .btn-primary {
+  color: #fff;
+  background-color: #343a40;
+  border-color: #343a40;
+}
+:where(html[data-v2b-color='black']) .btn-primary:hover {
+  color: #fff;
+  background-color: #23272b;
+  border-color: #1d2124;
+}
+:where(html[data-v2b-color='black']) .btn-primary:focus {
+  color: #fff;
+  background-color: #23272b;
+  border-color: #1d2124;
+  box-shadow: 0 0 0 .2rem rgba(82,88,93,.5);
+}
+:where(html[data-v2b-color='black']) .btn-primary:disabled {
+  color: #fff;
+  background-color: #343a40;
+  border-color: #343a40;
+}
+:where(html[data-v2b-color='black']) .dropdown-menu {
+  border-color: #ebebeb;
+}
+:where(html[data-v2b-color='black']) .dropdown-item {
+  color: #495057;
+}
+:where(html[data-v2b-color='black']) .dropdown-item:focus,
+:where(html[data-v2b-color='black']) .dropdown-item:hover {
+  color: #212529;
+  background-color: #f5f5f5;
+}
+:where(html[data-v2b-color='black']) .dropdown-item.active,
+:where(html[data-v2b-color='black']) .dropdown-item:active {
+  color: #fff;
+  background-color: #343a40;
+}
+:where(html[data-v2b-color='black']) .table td,
+:where(html[data-v2b-color='black']) .table th {
+  border-top-color: #ebebeb;
+}
+:where(html[data-v2b-color='black']) .table thead th {
+  border-bottom-color: #ebebeb;
+}
+:where(html[data-v2b-color='black']) .table tbody+tbody {
+  border-top-color: #ebebeb;
+}
+:where(html[data-v2b-color='black']) .form-control {
+  color: #495057;
+  background-color: #fff;
+  border-color: #e1e1e1;
+}
+:where(html[data-v2b-color='black']) .form-control:focus {
+  color: #212529;
+  background-color: #fff;
+  border-color: #6d7a86;
+  box-shadow: 0 0 0 .2rem rgba(52,58,64,.25);
+}
+:where(html[data-v2b-color='black']) .form-control:disabled,
+:where(html[data-v2b-color='black']) .form-control[readonly] {
+  background-color: #e9ecef;
+}
+:where(html[data-v2b-color='black']) select.form-control:focus::-ms-value {
+  color: #495057;
+  background-color: #fff;
+}
+:where(html[data-v2b-color='black']) .form-control.form-control-alt {
+  border-color: #f5f5f5;
+  background-color: #f5f5f5;
+}
+:where(html[data-v2b-color='black']) .form-control.form-control-alt:focus {
+  border-color: #ebebeb;
+  background-color: #ebebeb;
+  box-shadow: none;
+}
+:where(html[data-v2b-color='black']) .border {
+  border-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='black']) .border-right {
+  border-right-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='black']) .border-bottom {
+  border-bottom-color: #ebebeb !important;
+}
+:where(html[data-v2b-color='black']) #page-header {
+  background-color: #fff;
+}
+:where(html[data-v2b-color='black']) #sidebar {
+  background-color: #fff;
+}
+:where(html[data-v2b-color='black']) #page-container.page-header-dark #page-header {
+  color: #d6d6d6;
+  background-color: #343a40;
+}
+:where(html[data-v2b-color='black']) #page-container.sidebar-dark #sidebar {
+  color: #ebebeb;
+  background-color: #35393e;
+}
+:where(html[data-v2b-color='black']) .block {
+  box-shadow: 0 2px 6px rgba(235,235,235,.4);
+}
+:where(html[data-v2b-color='black']) .block-header-default {
+  background-color: #fafafa;
+}
+:where(html[data-v2b-color='black']) .block.block-bordered {
+  border-color: #ebebeb;
+}
+:where(html[data-v2b-color='black']) a.block {
+  color: #495057;
+}
+:where(html[data-v2b-color='black']) a.block:hover {
+  color: #495057;
+}
+:where(html[data-v2b-color='black']) a.block.block-link-pop:hover {
+  box-shadow: 0 .5rem 2rem #e1e1e1;
+}
+:where(html[data-v2b-color='black']) a.block.block-link-pop:active {
+  box-shadow: 0 .25rem .75rem #f2f2f2;
+}
+:where(html[data-v2b-color='black']) .block.block-fx-pop {
+  box-shadow: 0 .5rem 2rem #e1e1e1;
+}
+:where(html[data-v2b-color='black']) .nav-main-heading {
+  color: #869099;
+}
+:where(html[data-v2b-color='black']) .nav-main-link {
+  color: #495057;
+}
+:where(html[data-v2b-color='black']) .nav-main-link .nav-main-link-icon {
+  color: #6d7a86;
+}
+:where(html[data-v2b-color='black']) .nav-main-link.active,
+:where(html[data-v2b-color='black']) .nav-main-link:hover {
+  color: #000;
+  background-color: #e9ecef;
+}
+:where(html[data-v2b-color='black']) .page-header-dark #page-header .nav-main-heading,
+:where(html[data-v2b-color='black']) .sidebar-dark #sidebar .nav-main-heading {
+  color: #b8b8b8;
+}
+:where(html[data-v2b-color='black']) .page-header-dark #page-header .nav-main-link,
+:where(html[data-v2b-color='black']) .sidebar-dark #sidebar .nav-main-link {
+  color: #ebebeb;
+}
+:where(html[data-v2b-color='black']) .page-header-dark #page-header .nav-main-link>.nav-main-link-icon,
+:where(html[data-v2b-color='black']) .sidebar-dark #sidebar .nav-main-link>.nav-main-link-icon {
+  color: #b2bac1;
+}
+:where(html[data-v2b-color='black']) .page-header-dark #page-header .nav-main-link.active,
+:where(html[data-v2b-color='black']) .page-header-dark #page-header .nav-main-link:hover,
+:where(html[data-v2b-color='black']) .sidebar-dark #sidebar .nav-main-link.active,
+:where(html[data-v2b-color='black']) .sidebar-dark #sidebar .nav-main-link:hover {
+  color: #fff;
+  background-color: #1d2023;
+}
+:where(html[data-v2b-color='black']) h1,
+:where(html[data-v2b-color='black']) h2,
+:where(html[data-v2b-color='black']) h3,
+:where(html[data-v2b-color='black']) h4,
+:where(html[data-v2b-color='black']) h5,
+:where(html[data-v2b-color='black']) h6 {
+  color: rgba(0,0,0,0.85);
+}
+:where(html[data-v2b-color='black']) a {
+  color: #343a40;
+}
+:where(html[data-v2b-color='black']) a:hover {
+  color: #484a4d;
+}
+:where(html[data-v2b-color='black']) a:active {
+  color: #13161a;
+}
+:where(html[data-v2b-color='black']) ::selection {
+  color: #fff;
+  background: #343a40;
+}
+html:where([data-v2b-color='black']) {
+  --antd-wave-shadow-color: #343a40;
+}

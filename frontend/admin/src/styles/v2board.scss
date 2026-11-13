@@ -1,0 +1,333 @@
+// V2Board 管理端自己的样式覆盖（MIT，取自原版 umi.css 的开头与结尾部分）。
+// 其中 antd 3 的类名在 antd 6 中不存在或结构不同的，改写在 antd3-compat.scss。
+
+#root,
+body,
+html {
+  height: 100%;
+}
+html[data-darkreader-scheme='dark'] {
+  color-scheme: dark;
+}
+.ant-table {
+  font-family: menlo !important;
+}
+.ant-spin-blur {
+  overflow: unset;
+  opacity: unset;
+}
+.ant-spin-blur:after {
+  opacity: 0.7;
+}
+.ant-spin {
+  max-height: unset !important;
+}
+
+a:not([href]):hover {
+  color: initial;
+}
+#page-container.page-header-fixed #page-header {
+  z-index: 998;
+}
+#sidebar {
+  z-index: 999;
+  width: 80%;
+}
+@media (min-width: 992px) {
+  #sidebar {
+    width: 250px;
+  }
+}
+@media (max-width: 991.98px) {
+  .sidebar-toggle {
+    display: block !important;
+  }
+}
+@media (max-width: 768px) {
+  .ant-notification {
+    top: 0 !important;
+    width: 100%;
+    right: 0;
+    left: 0;
+    max-width: unset;
+  }
+  .ant-notification-notice {
+    border-radius: 0;
+  }
+  .v2board-searchbar {
+    width: 50%;
+  }
+}
+.anticon {
+  vertical-align: 0.1em;
+}
+.ant-table-pagination.ant-pagination {
+  margin: 16px !important;
+}
+.content-side.content-side-full {
+  height: calc(100% - 70px);
+}
+.content-side.content-side-full::-webkit-scrollbar {
+  display: none;
+}
+.v2board-background {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-color: #e8eaf2;
+  position: fixed;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+.v2board-payment-icon {
+  font-size: 27px;
+  vertical-align: -0.1em;
+}
+.ant-tag:last-child {
+  margin: 0;
+}
+// v2node 节点 ID：从右上角斜切下一条协议色（有意新增，原版只有纯红）。宽 10px、全高，与右边线约成 20°–30°（标签高 20–24px）；
+// 边框透明（TypeTag 的行内 style），背景从边框外沿画起，右边框和右下圆角也是协议色；方块宽度不变，数字可以压在两种颜色上
+.ant-tag.v2b-node-corner {
+  background-image: linear-gradient(
+    to bottom right,
+    transparent calc(50% - 0.5px),
+    var(--v2b-node-corner) calc(50% + 0.5px)
+  );
+  background-origin: border-box;
+  background-position: right top;
+  background-repeat: no-repeat;
+  background-size: 10px 100%;
+}
+.v2board-nav-mask {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: #000;
+  z-index: 999;
+  opacity: 0.5;
+  display: none;
+}
+.v2board-plan-features {
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  flex: 1 0 auto;
+}
+.v2board-plan-features > li {
+  padding: 6px 0;
+  color: #7c8088;
+  text-align: left;
+}
+.v2board-plan-features > li > b {
+  color: #2a2e36;
+  font-weight: 500;
+}
+.v2board-plan-content {
+  padding-top: 20px;
+  padding-left: 20px;
+}
+.v2board-plan-features > li:before {
+  font-family: 'Font Awesome 5 Free';
+  content: '\F058';
+  padding-right: 10px;
+  color: #425b94;
+  font-weight: 900;
+}
+.v2board-email-whitelist-enable {
+  display: flex;
+}
+.v2board-email-whitelist-enable input {
+  flex: 2 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.v2board-email-whitelist-enable select {
+  flex: 1 1;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  appearance: none;
+  background-position: right 50%;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='12'%3E%3Cpath d='M3.862 7.931L0 4.069h7.725z'/%3E%3C/svg%3E");
+  padding-right: 1.5em;
+}
+.block.block-mode-loading:before {
+  background: hsla(0, 0%, 100%, 0.7);
+}
+// 原版为 #plan .ant-drawer-content-wrapper 等（antd 3 把 Drawer 的 id 放在根节点上）；
+// antd 6 把 id 放在 .ant-drawer-content-wrapper 里面的 .ant-drawer-section 上，这里改用 :has() 匹配
+.ant-drawer-content-wrapper:has(> #plan, > #server, > #user, > #tutorial) {
+  max-width: 500px;
+}
+.v2board-drawer-action {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid #e8e8e8;
+  padding: 10px 16px;
+  text-align: right;
+  left: 0;
+  background: #fff;
+  border-radius: 0 0 4px 4px;
+  z-index: 1000;
+}
+.ant-dropdown-menu-item > .anticon:first-child {
+  margin-right: 0;
+}
+#v2ray-protocol #ace-editor {
+  max-width: 450px;
+  position: absolute;
+  font-size: 14px;
+  top: 55px;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  height: unset !important;
+}
+#page-container.main-content-boxed > #main-container .content,
+#page-container.main-content-boxed > #page-footer .content,
+#page-container.main-content-boxed > #page-header .content,
+#page-container.main-content-boxed > #page-header .content-header {
+  max-width: 1920px;
+}
+.child_node {
+  background: #eee;
+}
+// 固定列单元格有自己的白色背景（内容横向滚动时从下面经过），子节点行需要同样的灰色；
+// 优先级低于 antd 的行悬停背景
+.ant-table-wrapper tr.child_node > td:is(.ant-table-cell-fix-start, .ant-table-cell-fix-end) {
+  background: #eee;
+}
+.v2board_node_mobile {
+  padding: 15px;
+}
+.v2board_node_mobile:first-child {
+  border-top: 1px solid #eee;
+}
+.v2board_node_mobile .ant-list-item-extra {
+  margin: unset;
+}
+// 系统配置的标签栏紧贴内容（antd 3 默认下边距 16px；选择器与 _antd3-tabs.scss 的前缀一致）
+.ant-tabs.ant-tabs-line .ant-tabs-bar {
+  margin-bottom: 0;
+}
+.v2board-config-children {
+  border-left: 18px solid #eee;
+  padding-left: 0 !important;
+  background: #efefef;
+}
+.v2board-filter-drawer .ant-drawer-content-wrapper {
+  width: 30% !important;
+}
+@media (max-width: 767.98px) {
+  .v2board-config-children {
+    border-left: 12px solid #eee;
+    padding-left: 6px !important;
+  }
+  .v2board-table-action {
+    position: fixed;
+    background: #fff;
+    width: 100%;
+    z-index: 100;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  .v2board-table {
+    padding-top: 60px;
+  }
+  .alert {
+    margin-bottom: 0;
+  }
+}
+@media (max-width: 991px) {
+  .v2board-filter-drawer .ant-drawer-content-wrapper {
+    width: 80% !important;
+  }
+}
+.content-header {
+  height: 3.25rem;
+}
+.v2board-copyright {
+  position: absolute;
+  bottom: 10px;
+  right: 0;
+  left: 15px;
+  font-size: 10px;
+  opacity: 0.2;
+}
+#page-container.page-header-fixed #main-container {
+  padding-top: 3.25rem;
+}
+#v2board-table-dropdown {
+  position: fixed;
+  top: 0;
+}
+.v2board-auth-box {
+  position: fixed;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}
+#main-container {
+  background-color: #f0f3f8 !important;
+}
+a:not([href]):hover {
+  color: unset;
+}
+.v2board-container-title {
+  flex: 1 1;
+}
+.block-header {
+  padding: 0.75rem 16px;
+}
+.v2board-stats-bar {
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+// 工单对话（原版模块 FPmv 的 CSS Modules，类名与原版 umi.css 相同）
+.content___DW5w1 {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  margin-top: 60px !important;
+  margin-bottom: 55px !important;
+}
+.input___1j_ND {
+  position: fixed;
+  bottom: 0;
+}
+.tag___12_9H {
+  color: #000;
+  padding: 5px 10px;
+  font-size: 18px;
+}
+.ctrl___UqDJ7 {
+  float: right;
+  font-size: 18px;
+}
+
+// ---- 以下是新版新增的（原版没有）----
+// 公开演示站的提示：config.js 配置了 demo 时显示在顶栏标题旁（layouts/Header.tsx）。
+// 描边与文字跟随标题颜色（深色 / 浅色顶栏、各界面风格都适用）
+.v2board-demo-tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  vertical-align: 1px;
+  white-space: nowrap;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  opacity: 0.85;
+}

@@ -1,0 +1,77 @@
+// 页面按原版（antd 3）的 DOM 和 class 写，依赖 antd 3 组件的几个默认样式；antd 6 去掉或改变了这些默认值，
+// 不补上时各界面预设都会出问题（间距为 0、错位、换行等），与 antd 3 / antd 6 的观感无关。
+// legacy 在 antd3-compat.scss 里各自原来的位置引入，皮肤在 skins/index.scss 里引入
+//（主按钮背景是给 darkreader 用的，只有 legacy 引入）。
+
+// 空按钮（如路由弹窗「填写参考」链接里的占位按钮）：antd 3 顶端对齐（antd 6 按基线对齐，会把所在行撑高 4px）
+@mixin empty-button {
+  .ant-btn:empty {
+    vertical-align: top;
+  }
+}
+
+// 加载中的按钮（含加载图标淡出的过程）：antd 6 的按钮是 inline-flex，基线改由加载图标决定，同一行的其他按钮
+// （如抽屉底部的「取消」）会上下跳动约 2px；antd 3 的加载图标与文字在同一行里，基线不变。顶端对齐后不再影响同行
+// 按钮组（如用户管理的「过滤器 / 操作」）：同理，组里带图标的按钮基线落在图标底边，与同一行只有图标的按钮
+// （「创建用户」）差约 2px，会把整行撑高、按钮组下移；antd 3 的按钮组与按钮都按文字基线对齐。顶端对齐后位置一致
+@mixin button-baseline {
+  .ant-btn:has(> .ant-btn-loading-icon) {
+    vertical-align: top;
+  }
+  .ant-btn-group {
+    vertical-align: top;
+  }
+}
+
+// 加载中遮罩（原版 Loading 包裹整个内容块）：antd 6 的嵌套 Spin 根节点带组件重置样式（14px 字号、行高、文字颜色），
+// antd 3 的 .ant-spin-nested-loading 只有定位，里面的内容继承页面的 Dashmix 字号与颜色（16px / 24px / #495057）
+@mixin spin-inherit {
+  .ant-spin:not(.ant-spin-section) {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+  }
+}
+
+// 主按钮背景：颜色与 antd 6 相同，但写在静态样式里。暗黑模式下 darkreader 对 antd 运行时注入的按钮变量
+// （--ant-btn-bg-color）转换不稳定：例如主题配置页上没有其他 antd 按钮，打开「主题设置」后弹窗的「确定」背景变成透明
+@mixin primary-button-background {
+  .ant-btn.ant-btn-variant-solid.ant-btn-color-primary:not(:disabled) {
+    background: var(--ant-color-primary);
+  }
+  .ant-btn.ant-btn-variant-solid.ant-btn-color-primary:not(:disabled):hover {
+    background: var(--ant-color-primary-hover);
+  }
+  .ant-btn.ant-btn-variant-solid.ant-btn-color-primary:not(:disabled):active {
+    background: var(--ant-color-primary-active);
+  }
+}
+
+// Tag：antd 6 去掉了默认右边距（相邻的标签连在一起，如节点管理的「权限组」），并设置了 text-align: start
+// （antd 3 继承外层，例如节点倍率列的标签文字居中）
+@mixin tag-defaults {
+  .ant-tag {
+    margin-inline-end: 8px;
+    text-align: inherit;
+  }
+  .ant-tag:last-child {
+    margin: 0;
+  }
+}
+
+// 栅格：antd 3 的列在没有对应断点宽度时是占满一行的块（例如订阅抽屉里的 md={4} 在手机上），
+// antd 6 的列是 flex 子项，会收缩到内容宽度。用零优先级的 :where() 设为整行，各断点的宽度类仍然能覆盖
+@mixin grid-col-defaults {
+  :where(.ant-row) > :where(.ant-col) {
+    flex: 0 0 100%;
+  }
+}
+
+// 状态点（Badge status）：antd 3 不带文字时仍输出一个左边距 8px 的空文字，状态点与后面的内容隔开 8px；antd 6 不输出
+// （如节点名称、用户邮箱、订单 / 工单状态前的状态点）
+@mixin badge-dot-gap {
+  .ant-badge.ant-badge-status > .ant-badge-status-dot:last-child {
+    margin-inline-end: 8px;
+  }
+}

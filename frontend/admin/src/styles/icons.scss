@@ -1,0 +1,58 @@
+// 图标字体
+// FontAwesome 5：字体文件取自原版（保证字形一致），类名规则用官方 SCSS（不含 @font-face）
+@import '@fortawesome/fontawesome-free/scss/fontawesome';
+
+@font-face {
+  font-family: 'Font Awesome 5 Free';
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src:
+    url('../assets/fonts/fontawesome/fa-solid-900.woff2') format('woff2'),
+    url('../assets/fonts/fontawesome/fa-solid-900.woff') format('woff');
+}
+@font-face {
+  font-family: 'Font Awesome 5 Free';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src:
+    url('../assets/fonts/fontawesome/fa-regular-400.woff2') format('woff2'),
+    url('../assets/fonts/fontawesome/fa-regular-400.woff') format('woff');
+}
+@font-face {
+  font-family: 'Font Awesome 5 Brands';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src:
+    url('../assets/fonts/fontawesome/fa-brands-400.woff2') format('woff2'),
+    url('../assets/fonts/fontawesome/fa-brands-400.woff') format('woff');
+}
+.far {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 400;
+}
+.fa,
+.fas {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+}
+.fab {
+  font-family: 'Font Awesome 5 Brands';
+  font-weight: 400;
+}
+
+// Simple Line Icons：字体与原版完全相同；Dashmix 使用 .si 基础类 + .si-xxx 图标类
+@import 'simple-line-icons';
+.si {
+  font-family: simple-line-icons;
+  speak: none;
+  font-style: normal;
+  font-weight: 400;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

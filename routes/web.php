@@ -4,9 +4,8 @@ use App\Services\ThemeService;
 use Illuminate\Http\Request;
 
 Route::get('/' . config('v2board.secure_path', config('v2board.frontend_admin_path', hash('crc32b', config('app.key')))) . '/external-subscriptions', function () {
-    return response()->view('external-subscriptions', [
-        'adminPath' => config('v2board.secure_path', config('v2board.frontend_admin_path', hash('crc32b', config('app.key'))))
-    ])->header('Cache-Control', 'no-store')->header('Referrer-Policy', 'no-referrer');
+    $path = config('v2board.secure_path', config('v2board.frontend_admin_path', hash('crc32b', config('app.key'))));
+    return redirect('/' . $path . '#/external-subscriptions')->header('Cache-Control', 'no-store');
 });
 
 /*

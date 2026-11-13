@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
     <title>{{$title}}</title>
-    {{-- 后台前端来自 codeman857/v2board-admin（React），产物由 build-admin.sh 放入 public/assets/admin。
+    {{-- 后台前端源码位于 frontend/admin（上游 codeman857/v2board-admin），产物由 build-admin.sh 放入 public/assets/admin。
          静态资源的 ?v= 取 admin.js 与 admin.css 的内容哈希：前端重新构建后自动换新，不依赖后端版本号。 --}}
     @php
         $adminScript = public_path('assets/admin/assets/admin.js');

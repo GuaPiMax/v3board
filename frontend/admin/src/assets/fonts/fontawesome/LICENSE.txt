@@ -1,0 +1,2 @@
+Font Awesome Free 5 字体文件（取自原版 V2Board 管理端 public/assets/admin/static，
+保持与原版完全一致的字形）。字体许可：SIL OFL 1.1（https://fontawesome.com/license/free）。

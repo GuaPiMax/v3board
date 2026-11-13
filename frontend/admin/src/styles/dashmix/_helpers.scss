@@ -1,0 +1,120 @@
+// 背景 / 文字 / 字重等辅助类（数值按原版实测）
+@each $name, $alpha in (5: 0.05, 10: 0.1, 25: 0.25, 50: 0.5, 75: 0.75, 90: 0.9) {
+  .bg-black-#{$name} {
+    background-color: rgba(0, 0, 0, $alpha) !important;
+  }
+}
+@each $name, $alpha in (5: 0.05, 10: 0.1, 25: 0.25, 50: 0.5, 75: 0.75, 90: 0.9, 95: 0.95) {
+  .bg-white-#{$name} {
+    background-color: hsla(0, 0%, 100%, $alpha) !important;
+  }
+}
+.bg-image {
+  background-position: 0 50%;
+  background-size: cover;
+}
+// 白色渐变遮罩（主题配置的主题卡片）：窄屏为几乎不透明的白色，宽屏从左侧不透明渐变到右侧 30%
+.bg-gd-white-op-l {
+  background: hsla(0, 0%, 100%, 0.98);
+}
+@media (min-width: 768px) {
+  .bg-gd-white-op-l {
+    background: hsla(0, 0%, 100%, 0.3) 0 linear-gradient(-90deg, hsla(0, 0%, 100%, 0.3) 0, hsla(0, 0%, 100%, 0.98) 50% 100%) !important;
+  }
+}
+.bg-body {
+  background-color: #f0f3f8 !important;
+}
+.bg-body-light {
+  background-color: #f8f9fc !important;
+}
+.bg-body-dark {
+  background-color: #e4e9f3 !important;
+}
+.bg-gray-dark {
+  background-color: #6c757d !important;
+}
+.bg-gray-darker {
+  background-color: #343a40 !important;
+}
+.bg-gray-light {
+  background-color: #e9ecef !important;
+}
+.bg-gray-lighter {
+  background-color: #f8f9fa !important;
+}
+.bg-success-lighter {
+  background-color: #e4efd8 !important;
+}
+.bg-header-light {
+  background-color: #fff !important;
+}
+.bg-header-dark {
+  background-color: $primary !important;
+}
+
+@each $weight in (300, 400, 500, 600, 700) {
+  .font-w#{$weight} {
+    font-weight: $weight !important;
+  }
+}
+.font-size-base {
+  font-size: 1rem !important;
+}
+.font-size-lg {
+  font-size: 1.25rem !important;
+}
+.font-size-sm {
+  font-size: 0.875rem !important;
+}
+
+a.text-white.link-fx:before {
+  background-color: #fff;
+}
+a.text-white:focus,
+a.text-white:hover {
+  color: #ccc !important;
+}
+.text-white-50 {
+  color: hsla(0, 0%, 100%, 0.5) !important;
+}
+.text-white-75 {
+  color: hsla(0, 0%, 100%, 0.75) !important;
+}
+a.text-white-75:focus,
+a.text-white-75:hover {
+  color: hsla(0, 0%, 80%, 0.75) !important;
+}
+.text-black {
+  color: #000 !important;
+}
+.text-black-50 {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+.text-black-75 {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+.text-gray-dark {
+  color: #6c757d !important;
+}
+.text-gray-darker {
+  color: #343a40 !important;
+}
+.text-gray-light {
+  color: #e9ecef !important;
+}
+.text-gray-lighter {
+  color: #f8f9fa !important;
+}
+.text-wrap-break-word {
+  word-wrap: break-word;
+}
+.overflow-y-auto {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.animated {
+  animation-duration: 1.2s;
+  animation-fill-mode: both;
+}

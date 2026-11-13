@@ -1,0 +1,7 @@
+// Bootstrap 4.6.2（MIT）完整 SCSS，使用原版反推的变量编译，只用样式、不引入其 JS。
+// 原版 umi.css 包含完整的 Bootstrap，这里保持一致，后续页面的 class 都能直接使用。
+@import 'bootstrap/scss/functions';
+@import 'variables';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/bootstrap';

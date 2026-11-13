@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- 与原版一致不设置 lang：设置 zh-CN 后 Chrome 会把中文回退字体从「苹方 UI」换成 PingFang SC，字距不同 -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"
+    />
+    <title>V2Board</title>
+    <!-- 站点图标：V2Board 的 logo（public/favicon.png；原版没有站点图标） -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- 运行时配置（部署时修改 config.js，无需重新打包） -->
+    <script vite-ignore src="./config.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

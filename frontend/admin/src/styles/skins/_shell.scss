@@ -1,0 +1,721 @@
+// 外框换肤（所有皮肤共用）：把原版 Dashmix 外框（页面、侧边栏、顶栏、内容块、表单、按钮、提示、辅助类）
+// 和 v2board.scss 里写死的颜色换成皮肤变量。只定义 mixin，在 skins/index.scss 的皮肤作用域里引入。
+// 变量由各皮肤定义（见 _illustration.scss、_geek.scss）：
+//   - html 上：--v2b-page-bg（页面底色）、--v2b-page-pattern / --v2b-page-pattern-size（底纹）、--v2b-text（文字）。html / body 不在 antd 的
+//     CSS 变量作用域里（antd 的变量声明在 .v2b 上：<App> 的根节点和各个弹层）
+//   - .v2b 上：其余 --v2b-*（描边、圆角、阴影、各区域底色），可以引用 antd 的 --ant-* 变量
+// 外框里的颜色尽量直接用 antd 的变量（--ant-color-text、--ant-color-primary 等），随皮肤的 antd 主题（含暗色）变化。
+// 选择器与原版 / 主题色文件的复合选择器对齐（如 #page-container.sidebar-dark #sidebar），在它们之后引入，
+// 优先级相同时这里生效；原版带 !important 的辅助类同样带 !important。
+// 皮肤不区分后台设置的侧边栏 / 顶栏亮暗（sidebar-dark / page-header-dark），统一用皮肤的配色
+
+@mixin skin-shell {
+  // 页面组件里原来写死的颜色改用这些变量（legacy 下没有定义，取写死的原值）；皮肤可以在自己的文件里改
+  .v2b {
+    --v2b-text-muted: var(--ant-color-text-secondary);
+    --v2b-readonly-bg: var(--v2b-surface-sunken);
+    --v2b-success-bg: var(--ant-color-success-bg);
+    --v2b-success-line: var(--ant-color-success-border);
+    --v2b-success-text: var(--ant-color-success-text);
+    --v2b-loading: var(--ant-color-primary);
+    // 系统配置子项左侧的色条
+    --v2b-config-strip: var(--ant-color-primary-border);
+  }
+
+  // ---- 页面 ----
+  & {
+    background-color: var(--v2b-page-bg);
+  }
+  // 暗色：滚动条、原生控件也用暗色
+  &[data-v2b-dark] {
+    color-scheme: dark;
+  }
+  body {
+    color: var(--v2b-text);
+    background-color: var(--v2b-page-bg);
+  }
+  #root > .ant-app {
+    color: var(--ant-color-text);
+  }
+  #main-container {
+    background-color: var(--v2b-page-bg) !important;
+    background-image: var(--v2b-page-pattern);
+    background-size: var(--v2b-page-pattern-size);
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--ant-color-text-heading);
+  }
+  a {
+    color: var(--ant-color-link);
+  }
+  a:hover {
+    color: var(--ant-color-link-hover);
+  }
+  a:active {
+    color: var(--ant-color-link-active);
+  }
+  // 禁用的链接（如已关闭工单的「关闭」）：antd 3 基础样式里写死了黑色 25%
+  a[disabled] {
+    color: var(--ant-color-text-disabled);
+  }
+  a.link-fx::before {
+    background-color: var(--ant-color-link);
+  }
+  // 选中的文字（--v2b-on-primary：主色底上的文字色，默认白色，极客的霓虹绿底上用深色）
+  ::selection {
+    color: var(--v2b-on-primary, #fff);
+    background: var(--ant-color-primary);
+  }
+  // 当作文字、图标用的主色（仪表盘快捷入口的图标等）用链接色：暗色版的链接色比主色亮
+  .text-primary {
+    color: var(--ant-color-link) !important;
+  }
+  .bg-primary {
+    background-color: var(--ant-color-primary) !important;
+  }
+
+  // ---- 侧边栏 ----
+  #sidebar,
+  #page-container.sidebar-dark #sidebar {
+    color: var(--ant-color-text);
+    background-color: var(--v2b-sidebar-bg);
+    border-right: var(--v2b-sidebar-edge);
+    box-shadow: none;
+  }
+  // 站点名称（原版为主题色底、白字）
+  #sidebar .bg-header-dark {
+    background-color: var(--v2b-brand-bg) !important;
+    border-bottom: var(--v2b-brand-edge);
+  }
+  #sidebar .bg-header-dark .bg-black-10 {
+    background-color: transparent !important;
+  }
+  #sidebar .bg-header-dark .text-white,
+  #sidebar .bg-header-dark .text-white-75 {
+    color: var(--v2b-brand-text) !important;
+  }
+  #sidebar .bg-header-dark a.text-white.link-fx::before {
+    background-color: var(--v2b-brand-text);
+  }
+  .nav-main-heading,
+  .sidebar-dark #sidebar .nav-main-heading {
+    color: var(--ant-color-text-tertiary);
+  }
+  .nav-main-link,
+  .sidebar-dark #sidebar .nav-main-link {
+    font-weight: 500;
+    color: var(--ant-color-text);
+    border-radius: var(--v2b-radius-sm);
+  }
+  .nav-main-link .nav-main-link-icon,
+  .sidebar-dark #sidebar .nav-main-link > .nav-main-link-icon {
+    color: var(--ant-color-link);
+  }
+  .nav-main-link:hover,
+  .sidebar-dark #sidebar .nav-main-link:hover {
+    color: var(--ant-color-text);
+    background-color: var(--v2b-nav-hover-bg);
+  }
+  // 激活项：描边用 outline（不占位置，菜单高度不变）；描边色、阴影默认与其他描边、小阴影相同
+  .nav-main-link.active,
+  .sidebar-dark #sidebar .nav-main-link.active {
+    color: var(--v2b-nav-active-text);
+    background-color: var(--v2b-nav-active-bg);
+    outline: var(--v2b-line-width) solid var(--v2b-nav-active-line, var(--v2b-line));
+    outline-offset: calc(-1 * var(--v2b-line-width));
+    box-shadow: var(--v2b-nav-active-shadow, var(--v2b-shadow-sm));
+  }
+  // 手机上打开侧边栏时的遮罩：原版是黑色加 opacity .5，皮肤的遮罩色本身带透明度
+  .v2board-nav-mask {
+    background: var(--v2b-mask);
+    opacity: 1;
+  }
+  // 侧边栏底部的版本号：下移一些，给最后一个菜单项的激活阴影留出位置
+  .v2board-copyright {
+    bottom: 4px;
+  }
+
+  // ---- 顶栏 ----
+  // 分隔线用阴影画在顶栏下方（顶栏高度不变，主区域按原版高度留出位置）
+  #page-header,
+  #page-container.page-header-dark #page-header,
+  #page-container.page-header-fixed #page-header,
+  #page-container.page-header-fixed.page-header-dark #page-header {
+    color: var(--ant-color-text);
+    background-color: var(--v2b-header-bg);
+    box-shadow: var(--v2b-header-shadow);
+  }
+  #page-header .v2board-container-title {
+    padding-left: 0.5rem;
+    color: var(--ant-color-text-heading) !important;
+  }
+  // 顶栏按钮带描边和阴影后，原版 4px 的间距里挤着阴影（暗黑切换与账号按钮、手机上的菜单按钮与标题）
+  #page-header .btn.mr-1 {
+    margin-right: 0.5rem !important;
+  }
+  // 搜索浮层（原版为深色）
+  #page-header .overlay-header,
+  #page-header .overlay-header .content-header {
+    background-color: var(--v2b-header-bg) !important;
+  }
+  #page-header .overlay-header .form-control {
+    color: var(--ant-color-text);
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  // ---- 按钮（Bootstrap 的 .btn：顶栏、登录页）----
+  // 顶栏按钮不论后台设置的顶栏亮暗都是普通按钮（原版暗色顶栏用 btn-primary）
+  .btn,
+  #page-header .btn.btn-primary {
+    color: var(--ant-color-text);
+    background-color: var(--ant-color-bg-container);
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: var(--v2b-radius-sm);
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  // 悬停：默认换成暖色底（--v2b-btn-hover-*，极客换成霓虹绿描边与发光）
+  .btn:hover,
+  .btn:focus,
+  .btn.focus,
+  #page-header .btn.btn-primary:hover,
+  #page-header .btn.btn-primary:focus {
+    color: var(--v2b-btn-hover-text, var(--ant-color-text));
+    background-color: var(--v2b-btn-hover-bg, var(--v2b-surface-alt));
+    border-color: var(--v2b-btn-hover-line, var(--v2b-line));
+    box-shadow: var(--v2b-btn-hover-shadow, var(--v2b-shadow-sm));
+  }
+  // 禁用的按钮（如主题配置的「当前主题」：原版是 btn-outline-light，白字透明底，叠在白色渐变上看不见）
+  .btn.disabled,
+  .btn:disabled {
+    color: var(--ant-color-text);
+    background-color: var(--v2b-surface-sunken);
+    border-color: var(--v2b-line);
+    box-shadow: none;
+  }
+  .btn-primary,
+  .btn-primary:hover,
+  .btn-primary:focus,
+  .btn-primary.focus,
+  .btn-primary.disabled,
+  .btn-primary:disabled {
+    color: var(--v2b-on-primary, #fff);
+    background-color: var(--ant-color-primary);
+    border-color: var(--v2b-line);
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  .btn-primary:hover {
+    background-color: var(--ant-color-primary-hover);
+  }
+  // 按下：按钮落到阴影的位置
+  .btn:not(:disabled):not(.disabled):active,
+  .btn-primary:not(:disabled):not(.disabled):active,
+  .btn-primary:not(:disabled):not(.disabled):active:focus,
+  .btn-dark:not(:disabled):not(.disabled):active,
+  .btn-dark:not(:disabled):not(.disabled):active:focus,
+  #page-header .btn.btn-primary:not(:disabled):not(.disabled):active {
+    border-color: var(--v2b-line);
+    box-shadow: none;
+    transform: var(--v2b-press);
+  }
+  .btn-primary:not(:disabled):not(.disabled):active,
+  .btn-primary:not(:disabled):not(.disabled):active:focus {
+    color: var(--v2b-on-primary, #fff);
+    background-color: var(--ant-color-primary-active);
+  }
+  .btn-dark,
+  .btn-dark:hover,
+  .btn-dark:focus {
+    color: var(--ant-color-text);
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  // ---- 下拉菜单（顶栏的账号菜单）----
+  // 与按钮之间留出按钮阴影的位置（原版 2px）
+  .dropdown-menu {
+    margin-top: 0.5rem;
+    color: var(--ant-color-text);
+    background-color: var(--ant-color-bg-container);
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: var(--v2b-radius-sm);
+    box-shadow: var(--v2b-shadow);
+  }
+  .dropdown-item {
+    color: var(--ant-color-text);
+  }
+  .dropdown-item:focus,
+  .dropdown-item:hover {
+    color: var(--ant-color-text);
+    background-color: var(--v2b-nav-hover-bg);
+  }
+
+  // ---- 内容块 ----
+  // 圆角处裁掉里面的内容（表头、标签栏的底色）；clip 不产生滚动容器
+  .block,
+  .block.block-rounded,
+  .block.block-bordered {
+    background-color: var(--ant-color-bg-container);
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: var(--v2b-radius);
+    box-shadow: var(--v2b-shadow);
+    overflow: clip;
+  }
+  .block .block,
+  .content-side .block {
+    box-shadow: none;
+  }
+  .block.block-transparent {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  .block.block-rounded > .block-header,
+  .block.block-rounded > .block-content:first-child,
+  .block.block-rounded > .block-content:last-child {
+    border-radius: 0;
+  }
+  .block-header-default {
+    background-color: var(--v2b-surface-alt);
+    border-bottom: var(--v2b-line-width) solid var(--v2b-line);
+  }
+  .block-title {
+    color: var(--ant-color-text-heading);
+  }
+  .block-title small {
+    color: var(--ant-color-text-secondary);
+  }
+  .block.block-mode-loading::before {
+    background: color-mix(in srgb, var(--ant-color-bg-container) 70%, transparent);
+  }
+  .block.block-fx-pop,
+  .block.block-fx-shadow {
+    box-shadow: var(--v2b-shadow);
+  }
+  a.block,
+  a.block:hover {
+    color: var(--ant-color-text);
+  }
+  a.block:hover,
+  a.block.block-link-pop:hover,
+  a.block.block-link-shadow:hover {
+    opacity: 1;
+    box-shadow: var(--v2b-shadow-hover);
+    transform: var(--v2b-lift);
+  }
+  a.block.block-link-pop:active,
+  a.block.block-link-shadow:active {
+    box-shadow: none;
+    transform: var(--v2b-press);
+  }
+
+  // ---- 表单（原生输入框：系统配置的部分输入、登录页）----
+  label {
+    color: var(--ant-color-text);
+  }
+  // 高度与 antd 的大号输入框相同（不随线宽变化，插画、极客都是 40px），圆角也用大号的一档
+  .form-control,
+  .form-control.form-control-alt {
+    height: var(--ant-control-height-lg);
+    color: var(--ant-color-text);
+    background-color: var(--ant-color-bg-container);
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: var(--v2b-radius);
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  textarea.form-control {
+    height: auto;
+  }
+  .form-control:focus,
+  .form-control.form-control-alt:focus {
+    color: var(--ant-color-text);
+    background-color: var(--ant-color-bg-container);
+    border-color: var(--ant-color-primary);
+    box-shadow: var(--v2b-shadow-focus);
+  }
+  .form-control::placeholder {
+    color: var(--ant-color-text-placeholder);
+  }
+  .form-control:disabled,
+  .form-control[readonly] {
+    background-color: var(--v2b-surface-sunken);
+  }
+
+  // ---- 提示 ----
+  .alert {
+    color: var(--ant-color-text);
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: var(--v2b-radius-sm);
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  .alert-danger {
+    background-color: var(--ant-color-error-bg);
+  }
+  .alert-warning {
+    background-color: var(--ant-color-warning-bg);
+  }
+  .alert-danger .alert-link,
+  .alert-warning .alert-link {
+    color: var(--ant-color-text);
+  }
+
+  // ---- 辅助类 ----
+  .bg-white {
+    background-color: var(--ant-color-bg-container) !important;
+  }
+  .bg-gray-lighter,
+  .bg-body-light {
+    background-color: var(--v2b-surface-alt) !important;
+  }
+  .bg-body,
+  .bg-body-dark {
+    background-color: var(--v2b-surface-sunken) !important;
+  }
+  .bg-success-lighter {
+    background-color: var(--ant-color-success-bg) !important;
+  }
+  .text-black,
+  .text-black-75,
+  .text-dark {
+    color: var(--ant-color-text) !important;
+  }
+  .text-muted {
+    color: var(--ant-color-text-secondary) !important;
+  }
+  .text-gray-light {
+    color: var(--ant-color-text-quaternary) !important;
+  }
+  // 边框辅助类只改对应那一边的颜色；原版有些内容块也带 border-bottom（列表、系统配置、仪表盘），
+  // 这时保留皮肤的描边（Bootstrap 的 .border-bottom 还把下边改成 1px）
+  .border {
+    border-color: var(--v2b-line-soft) !important;
+  }
+  .border-top {
+    border-top-color: var(--v2b-line-soft) !important;
+  }
+  .border-right {
+    border-right-color: var(--v2b-line-soft) !important;
+  }
+  .border-bottom {
+    border-bottom-color: var(--v2b-line-soft) !important;
+  }
+  .border-left {
+    border-left-color: var(--v2b-line-soft) !important;
+  }
+  .block.border-bottom {
+    border-color: var(--v2b-line) !important;
+    border-bottom-width: var(--v2b-line-width) !important;
+  }
+
+  // ---- v2board.scss 里写死颜色的元素 ----
+  // 登录页：背景（配置了背景图时用背景图，写在行内样式里）、卡片（原版是透明块加行内的柔和阴影）
+  .v2board-background {
+    background-color: var(--v2b-page-bg);
+  }
+  .v2board-background:not([style*='background-image']) {
+    background-image: var(--v2b-page-pattern);
+    background-size: var(--v2b-page-pattern-size);
+    background-repeat: repeat;
+    background-position: 0 0;
+  }
+  .v2board-auth-box .block.block-transparent {
+    background-color: var(--ant-color-bg-container);
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    box-shadow: var(--v2b-shadow) !important;
+  }
+  .v2board-auth-box .bg-gray-lighter {
+    border-top: var(--v2b-line-width) solid var(--v2b-line);
+  }
+  // 主题配置的主题卡片：背景图上叠一层白色渐变（bg-gd-white-op-l），改用内容块的底色（暗色版随之变暗），并带上描边
+  .block.block-transparent.bg-image {
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    box-shadow: var(--v2b-shadow);
+  }
+  .bg-gd-white-op-l {
+    background: color-mix(in srgb, var(--ant-color-bg-container) 98%, transparent);
+  }
+  @media (min-width: 768px) {
+    .bg-gd-white-op-l {
+      background: linear-gradient(
+        -90deg,
+        color-mix(in srgb, var(--ant-color-bg-container) 30%, transparent) 0,
+        color-mix(in srgb, var(--ant-color-bg-container) 98%, transparent) 50% 100%
+      ) !important;
+    }
+  }
+  // 仪表盘：原版的快捷入口、统计、图表几块上下相接拼成一块，皮肤里各自是一张卡片，中间留出与其他内容块相同的间距
+  //（下面排行卡片那一行原版另有 1rem 的上边距，去掉）；快捷入口的四个链接各自是小卡片。
+  // 这是默认的排法（四边描边、圆角、错位阴影相接时会叠在一起）；没有错位阴影的风格可以改用下面的 skin-dashboard-joined
+  #main-container .block.border-bottom.mb-0:is(.js-classic-nav, .v2board-stats-bar, :has(> #orderChart)) {
+    margin-bottom: 1.75rem !important;
+  }
+  #main-container .row.mt-xl-3 {
+    margin-top: 0 !important;
+  }
+  // 两条统计栏放不下时与原版一样可以左右拖动（v2board.scss 的 overflow-x: auto），不被上面内容块的 clip 覆盖；
+  // 滚动容器同样按圆角裁剪
+  .block.v2board-stats-bar {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .js-classic-nav .row.border {
+    border: 0 !important;
+  }
+  .js-classic-nav a.block {
+    margin: 0.375rem;
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  // 工单对话：标题栏、消息气泡、底部的输入栏
+  div:has(> .js-chat-messages) > .block-content-full:first-child {
+    border-bottom: var(--v2b-line-width) solid var(--v2b-line);
+  }
+  // 消息区按原版的标题栏高度（60px）定位，标题栏的描边更粗，往下让出来
+  .content___DW5w1 {
+    margin-top: calc(59px + var(--v2b-line-width)) !important;
+  }
+  .js-chat-messages .rounded {
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: var(--v2b-radius-sm) !important;
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  .js-chat-form {
+    border-top: var(--v2b-line-width) solid var(--v2b-line);
+  }
+  .js-chat-form .form-control {
+    background-color: var(--ant-color-bg-container) !important;
+    border: var(--v2b-line-width) solid var(--v2b-line) !important;
+  }
+  // 抽屉底部的操作栏：与抽屉同色；内容区按操作栏的实际高度（按钮变高、描边变粗）留出位置
+  .v2board-drawer-action {
+    background: var(--ant-color-bg-elevated);
+    border-top: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: 0;
+  }
+  .ant-drawer .ant-drawer-body:has(.v2board-drawer-action) {
+    margin-bottom: calc(20px + var(--ant-control-height) + var(--v2b-line-width));
+  }
+  // 节点「编辑协议配置」子抽屉里的编辑器紧贴标题栏（原版按 55px 高的标题栏定位，皮肤的描边更粗）；
+  // 原版限宽 450px，抽屉宽 500px，右边露出一条抽屉底色，皮肤里铺满
+  #v2ray-protocol #ace-editor {
+    top: calc(54px + var(--v2b-line-width));
+    max-width: none;
+  }
+  // 节点的子节点行（含固定列单元格）、系统配置的子项
+  .child_node,
+  .ant-table-wrapper tr.child_node > td:is(.ant-table-cell-fix-start, .ant-table-cell-fix-end) {
+    background: var(--v2b-surface-alt);
+  }
+  .v2board-config-children {
+    border-left-color: var(--v2b-config-strip);
+    background: var(--v2b-surface-alt);
+  }
+  // 系统配置每个标签页的最后一项不画分隔线（与内容块的描边重复；分隔线写在行内样式里）。
+  // 按 role 选面板：antd 6.6 的面板类名是 ant-tabs-content（以前是 ant-tabs-tabpane）
+  [role='tabpanel'] > div > .row:last-child {
+    border-bottom-color: transparent !important;
+  }
+  // 系统配置里上下排的两个输入框（原版间距 4px，放不下阴影）
+  .form-control.mt-1 {
+    margin-top: 0.5rem !important;
+  }
+  .v2board_node_mobile:first-child {
+    border-top-color: var(--v2b-line-soft);
+  }
+  // 手机上固定在列表顶部的操作栏
+  .v2board-table-action {
+    background: var(--ant-color-bg-container);
+    border-bottom-color: var(--v2b-line-soft);
+  }
+  .v2board-plan-features > li {
+    color: var(--ant-color-text-secondary);
+  }
+  .v2board-plan-features > li > b {
+    color: var(--ant-color-text);
+  }
+  .v2board-plan-features > li::before {
+    color: var(--ant-color-primary);
+  }
+  // 工单对话的标题标签
+  .tag___12_9H {
+    color: var(--ant-color-text);
+  }
+
+  // ---- 手机上的节点列表（LegacyList：antd 3 列表样式里写死了浅色背景下的颜色）----
+  .ant-list {
+    color: var(--ant-color-text);
+  }
+  .ant-list-empty-text {
+    color: var(--ant-color-text-quaternary);
+  }
+  .ant-list-item-meta-title,
+  .ant-list-vertical .ant-list-item-meta-title {
+    color: var(--ant-color-text-heading);
+  }
+  .ant-list-item-meta-description,
+  .ant-list-item-action > li {
+    color: var(--ant-color-text-secondary);
+  }
+  .ant-list-item-action-split {
+    background-color: var(--v2b-line-soft);
+  }
+  .ant-list-split .ant-list-item {
+    border-bottom-color: var(--v2b-line-soft);
+  }
+
+  // ---- 知识库的 Markdown 编辑器（react-markdown-editor-lite 自带浅色样式，随页面分包在主样式之后加载，
+  // 所以这里的选择器前面多一个 .ant-drawer 提高优先级）----
+  .ant-drawer .rc-md-editor {
+    color: var(--ant-color-text);
+    background: var(--ant-color-bg-container);
+    border: var(--v2b-line-width) solid var(--v2b-line);
+    border-radius: var(--v2b-radius-sm);
+    box-shadow: var(--v2b-shadow-sm);
+    overflow: clip;
+  }
+  .ant-drawer .rc-md-editor.full {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .ant-drawer .rc-md-editor .rc-md-navigation {
+    background: var(--v2b-surface-alt);
+    border-bottom: var(--v2b-line-width) solid var(--v2b-line);
+  }
+  .ant-drawer .rc-md-editor .rc-md-navigation .navigation-nav,
+  .ant-drawer .rc-md-editor .rc-md-navigation .button-wrap .button,
+  .ant-drawer .rc-md-editor .tool-bar .button {
+    color: var(--ant-color-text-secondary);
+  }
+  .ant-drawer .rc-md-editor .rc-md-navigation .button-wrap .button:hover,
+  .ant-drawer .rc-md-editor .tool-bar .button:hover {
+    color: var(--ant-color-text);
+  }
+  .ant-drawer .rc-md-editor .rc-md-navigation .button-wrap .button.disabled {
+    color: var(--ant-color-text-disabled);
+  }
+  .ant-drawer .rc-md-editor .rc-md-divider {
+    background-color: var(--v2b-line-soft);
+  }
+  .ant-drawer .rc-md-editor .editor-container > .section {
+    border-right-color: var(--v2b-line-soft);
+  }
+  .ant-drawer .rc-md-editor .editor-container .sec-md .input {
+    color: var(--ant-color-text);
+    background: var(--ant-color-bg-container);
+  }
+  .ant-drawer .rc-md-editor .drop-wrap {
+    background-color: var(--ant-color-bg-elevated);
+    border-color: var(--v2b-line);
+  }
+  .ant-drawer .rc-md-editor .tab-map-list .list-item:hover,
+  .ant-drawer .rc-md-editor .header-list .list-item:hover {
+    background: var(--v2b-surface-alt);
+  }
+  .ant-drawer .rc-md-editor .table-list.wrap .list-item {
+    background-color: var(--v2b-surface-sunken);
+  }
+  .ant-drawer .rc-md-editor .table-list.wrap .list-item.active {
+    background: var(--ant-color-text-tertiary);
+  }
+  // 预览区：外框的标题颜色（h1–h6）不作用到这里，跟随预览区的文字色
+  .ant-drawer .custom-html-style {
+    color: var(--ant-color-text);
+  }
+  .ant-drawer .custom-html-style :is(h1, h2, h3, h4, h5, h6, blockquote) {
+    color: inherit;
+  }
+  .ant-drawer .custom-html-style a {
+    color: var(--ant-color-link);
+  }
+  .ant-drawer .custom-html-style hr {
+    border-top-color: var(--v2b-line-soft);
+  }
+  .ant-drawer .custom-html-style :is(pre, code) {
+    background-color: var(--v2b-surface-sunken);
+  }
+  .ant-drawer .custom-html-style blockquote {
+    border-left-color: var(--v2b-line-soft);
+  }
+  .ant-drawer .custom-html-style :is(table, table tr, table th, table td) {
+    border-color: var(--v2b-line-soft);
+  }
+  .ant-drawer .custom-html-style table th {
+    background-color: var(--v2b-surface-alt);
+  }
+
+  // ---- 节点配置的代码编辑器（ace 的 github 主题在运行时插入样式，优先级同样要高一些）：行号栏用暖色 ----
+  .ant-drawer .ace-github .ace_gutter {
+    background: var(--v2b-surface-alt);
+  }
+  // 暗色版用的 tomorrow_night 主题是冷灰蓝，换成皮肤的暖色
+  .ant-drawer .ace-tomorrow-night {
+    background-color: var(--ant-color-bg-container);
+  }
+  .ant-drawer .ace-tomorrow-night .ace_gutter {
+    background: var(--v2b-surface-alt);
+  }
+  .ant-drawer .ace-tomorrow-night .ace_marker-layer .ace_active-line,
+  .ant-drawer .ace-tomorrow-night .ace_gutter-active-line {
+    background: color-mix(in srgb, var(--ant-color-text) 7%, transparent);
+  }
+
+  // ---- 手机、平板（< 992px）：原版内容区没有左右留白（p-0 p-lg-4），内容块与提示贴着屏幕两边 ----
+  // 去掉左右描边与圆角（只留上下两条线，阴影只向下），与顶栏、彼此之间留出间距
+  //（原版手机上提示没有下边距，两条提示的描边会叠在一起；圆角贴着顶栏的分隔线会露出缺口）
+  @media (max-width: 991.98px) {
+    #page-container.sidebar-o #main-container > .p-0 {
+      padding-top: 0.75rem !important;
+      padding-bottom: 0.75rem !important;
+    }
+    #page-container.sidebar-o #main-container .block:not(.block .block),
+    #page-container.sidebar-o #main-container .alert:not(.block .alert) {
+      margin-bottom: 0.75rem;
+      border-left-width: 0;
+      border-right-width: 0;
+      border-radius: 0;
+      box-shadow: var(--v2b-band-shadow);
+    }
+    #page-container.sidebar-o #main-container .alert:not(.block .alert) {
+      margin-bottom: 0.75rem !important;
+    }
+    #main-container .block.border-bottom.mb-0:is(.js-classic-nav, .v2board-stats-bar, :has(> #orderChart)) {
+      margin-bottom: 0.75rem !important;
+    }
+  }
+}
+
+// 仪表盘改回原版的拼接排法：在皮肤自己的作用域里引入（见 _geek.scss），适合没有错位阴影的风格。
+// 覆盖上面 skin-shell 里拆成卡片的规则（选择器相同、排在后面）：
+//   - 快捷入口、两条统计栏、收入图上下相接，下外边距为负的线宽，相邻两块的描边重叠成一条线；与原版一样是直角
+//   - 下面排行卡片那一行的间距按原版：≥1200px 留 1rem，更窄时紧接在收入图下面（描边同样重叠）
+//   - 快捷入口的四个格子与原版一样拼成网格，格子之间只有一条线：每格向右、向下各伸出一个线宽，压住相邻格子的描边，
+//     外框补上最后一列、最后一行伸出的部分（两列折行时也成立）；悬停的格子浮到最上层，描边与发光不被相邻格子盖住
+@mixin skin-dashboard-joined {
+  #main-container .block.border-bottom.mb-0:is(.js-classic-nav, .v2board-stats-bar, :has(> #orderChart)) {
+    margin-bottom: calc(-1 * var(--v2b-line-width)) !important;
+    border-radius: 0;
+  }
+  @media (min-width: 1200px) {
+    #main-container .row.mt-xl-3 {
+      margin-top: calc(1rem + var(--v2b-line-width)) !important;
+    }
+  }
+  .js-classic-nav .row.border {
+    padding: 0 var(--v2b-line-width) var(--v2b-line-width) 0;
+  }
+  .js-classic-nav a.block {
+    position: relative;
+    margin: 0 calc(-1 * var(--v2b-line-width)) calc(-1 * var(--v2b-line-width)) 0 !important;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .js-classic-nav a.block:hover {
+    z-index: 1;
+  }
+}

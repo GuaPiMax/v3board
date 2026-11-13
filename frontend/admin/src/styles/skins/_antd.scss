@@ -1,0 +1,223 @@
+// antd 组件的换肤装饰（所有皮肤共用）：颜色、圆角、线宽、控件高度由各皮肤的 antd 主题（app/skins）决定，
+// 这里补 token 表达不了的描边与阴影（插画是错位实色阴影，极客是发光），读取各皮肤的 --v2b-* 变量。
+// 浮层（弹窗、下拉、提示等）的描边用阴影画（--v2b-ring），不占位置：内容区宽度与 antd 6 默认相同，不会多出折行。
+// 只定义 mixin，在 skins/index.scss 的皮肤作用域里引入
+
+@mixin skin-antd {
+  // ---- 输入框、选择框、日期选择、数字输入：带阴影，聚焦时阴影换成主题色 ----
+  .ant-input-outlined:not(.ant-input-borderless),
+  .ant-input-affix-wrapper.ant-input-outlined,
+  .ant-input-number-outlined,
+  .ant-picker-outlined,
+  .ant-select-outlined {
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  // 选择框的聚焦规则与 antd 写法相同（优先级相同，这里在后面生效）
+  .ant-input-outlined:focus,
+  .ant-input-outlined:focus-within,
+  .ant-input-affix-wrapper.ant-input-outlined:focus-within,
+  .ant-input-number-outlined:focus-within,
+  .ant-picker-outlined.ant-picker-focused,
+  .ant-select.ant-select-outlined:not(.ant-select-disabled).ant-select-focused,
+  .ant-input-group-wrapper-outlined:focus-within {
+    box-shadow: var(--v2b-shadow-focus);
+  }
+  // 带前后置文字的输入框组（如「GB」「x」）：外层整体带阴影，里面的输入框不重复；外层圆角随尺寸
+  .ant-input-group-wrapper .ant-input-outlined,
+  .ant-input-group-wrapper .ant-input-affix-wrapper.ant-input-outlined {
+    box-shadow: none;
+  }
+  .ant-input-group-wrapper-outlined {
+    border-radius: var(--ant-border-radius);
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  .ant-input-group-wrapper-lg.ant-input-group-wrapper-outlined {
+    border-radius: var(--ant-border-radius-lg);
+  }
+  .ant-input-group-wrapper-sm.ant-input-group-wrapper-outlined {
+    border-radius: var(--ant-border-radius-sm);
+  }
+  // 禁用的控件不画阴影（紧凑组里的除外，见下面）
+  .ant-input-disabled,
+  .ant-input-outlined[disabled],
+  .ant-select-disabled,
+  .ant-picker-disabled,
+  .ant-input-number-disabled,
+  .ant-input-group-wrapper-disabled {
+    box-shadow: none;
+  }
+  // 紧凑排列的输入框组（创建用户的「账号 @ 域」）：子项按百分比排，彼此压住一个线宽，线宽 2 时整组比下面的输入框短 4px；
+  // 改成弹性布局，最后一项补满。阴影不能画在整行宽的外层上（批量生成时隐藏「账号」后会悬空），各子项只向下投影，
+  // 最后一项再向右投影（悬停时抬高的子项不会把阴影压到旁边）；组里禁用的「@」同样投影（写在上面的禁用规则之后，
+  // 阴影带不断开），描边与相邻的输入框一致
+  .ant-input-group.ant-input-group-compact {
+    display: flex;
+  }
+  .ant-input-group.ant-input-group-compact > :last-child {
+    flex-grow: 1;
+  }
+  .ant-input-group-compact
+    > :is(
+      .ant-input-outlined,
+      .ant-input-affix-wrapper,
+      .ant-input-number-outlined,
+      .ant-picker-outlined,
+      .ant-select-outlined
+    ) {
+    box-shadow: var(--v2b-band-shadow);
+  }
+  // 最后一项的错位阴影从左边 3px 处开始，它又压住前一项一个线宽，两段阴影之间会空出 1px，再叠一层只向下的
+  .ant-input-group-compact
+    > :last-child:is(
+      .ant-input-outlined,
+      .ant-input-affix-wrapper,
+      .ant-input-number-outlined,
+      .ant-picker-outlined,
+      .ant-select-outlined
+    ) {
+    box-shadow: var(--v2b-shadow-sm), var(--v2b-band-shadow);
+  }
+  .ant-input-group-compact > .ant-input-outlined:disabled {
+    border-color: var(--v2b-line);
+  }
+  // 前后置区里的下拉（优惠券「按金额优惠」、礼品卡类型）：antd 让它继承前置区的底色，并且上下撑到前置区的描边上，
+  // 前置区是不透明的暖色（禁用时也是）时会盖住上下的描边；改成透明（选择器与 antd 相同，这里在后面生效）
+  .ant-input-group
+    .ant-input-group-addon
+    .ant-select.ant-select-single:not(.ant-select-customize-input):not(.ant-pagination-size-changer) {
+    background-color: transparent;
+  }
+  // 多选的已选项带一圈浅色描边（antd 6.6 在 .ant-select-multiple 上把描边色设成透明，不读 multipleItemBorderColor；
+  // 用深色描边时与选择框的描边只隔 2px，像双线）
+  .ant-select.ant-select-multiple {
+    --ant-select-multi-item-border-color: var(--v2b-line-soft);
+  }
+
+  // ---- 按钮 ----
+  // 实心按钮（主按钮、危险按钮）与默认按钮一样带描边（antd 的实心按钮边框是透明的，用变量设置）
+  .ant-btn.ant-btn-variant-solid {
+    --ant-btn-border-color: var(--v2b-line);
+  }
+  // 按下：落到阴影的位置（文字、链接按钮没有阴影，不动）
+  .ant-btn:is(.ant-btn-variant-outlined, .ant-btn-variant-solid, .ant-btn-variant-dashed):not(:disabled):active {
+    box-shadow: none;
+    transform: var(--v2b-press);
+  }
+  // 按钮组（用户管理的「过滤器 | 操作」）、单选按钮组（工单的「已开启 / 已关闭」）：阴影画在组的外层，
+  // 组里的按钮不画（否则悬停时抬高的按钮会把阴影压到旁边的按钮上）
+  .ant-btn-group,
+  .ant-radio-group:has(> .ant-radio-button-wrapper) {
+    border-radius: var(--ant-border-radius);
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  .ant-btn-group > .ant-btn {
+    box-shadow: none;
+  }
+
+  // ---- 开关、分页、状态点、标签 ----
+  // 开关：描边（用阴影画，不改变尺寸）
+  .ant-switch {
+    box-shadow: var(--v2b-ring);
+  }
+  .ant-pagination .ant-pagination-item-active {
+    box-shadow: var(--v2b-shadow-sm);
+  }
+  // 状态点「默认」（如用户「离线」、订单「已取消」）：antd 是文字色的 25%，暗色下看不见
+  .ant-badge.ant-badge-status .ant-badge-status-default {
+    background-color: var(--ant-color-text-tertiary);
+  }
+  // 实心标签（节点的协议标签）：暗色下深色的标签（如 hysteria 的 #1A1A1A）与底色分不清，加一圈细线
+  &[data-v2b-dark] .ant-tag-solid {
+    box-shadow: 0 0 0 1px var(--v2b-line-soft);
+  }
+
+  // ---- 表格 ----
+  // 固定列、横向滚动时表格两端的柔和渐变阴影换成一条细线；内容块里的表格下面没有分页时，最后一行不画分隔线
+  //（与内容块的描边重复；有分页时保留，作为表格与分页的分界）；弹窗里的表格与弹窗同色（暗色下内容块的底色比浮层深）
+  .ant-table-wrapper .ant-table-cell-fix-end-shadow-show::after,
+  .ant-table-wrapper .ant-table-fix-end-shadow-show .ant-table-container::after {
+    box-shadow: inset -1px 0 0 var(--v2b-line-soft);
+  }
+  .ant-table-wrapper .ant-table-cell-fix-start-shadow-show::after,
+  .ant-table-wrapper .ant-table-fix-start-shadow-show .ant-table-container::before {
+    box-shadow: inset 1px 0 0 var(--v2b-line-soft);
+  }
+  .block .ant-table:not(:has(+ .ant-pagination)) .ant-table-tbody > tr:last-child > td {
+    border-bottom: 0;
+  }
+  .ant-modal .ant-table,
+  .ant-modal .ant-table-tbody > tr > td,
+  .ant-modal .ant-pagination .ant-pagination-item {
+    background: var(--ant-color-bg-elevated);
+  }
+
+  // ---- 浮层：描边用阴影画（不占位置），错位阴影同样来自皮肤变量 ----
+  // 弹窗裁掉圆角外的内容（流量记录弹窗里贴边的表格会盖住圆角处的描边）
+  .ant-modal .ant-modal-container {
+    box-shadow: var(--v2b-ring-shadow);
+    overflow: clip;
+  }
+  // 表头筛选的写法与 antd 相同（.ant-dropdown 前缀，优先级相同，这里在后面生效）；下拉框见下面
+  .ant-dropdown .ant-dropdown-menu,
+  .ant-select-dropdown > div,
+  .ant-picker-dropdown .ant-picker-panel-container,
+  .ant-popover .ant-popover-container,
+  .ant-dropdown .ant-table-filter-dropdown,
+  .ant-notification .ant-notification-notice,
+  .ant-message .ant-message-notice {
+    box-shadow: var(--v2b-ring-shadow);
+  }
+  // 表头筛选：外层已有描边，里面的菜单不再画；菜单项随控件变高，放宽最大高度（8 个协议都能显示）
+  .ant-dropdown .ant-table-filter-dropdown .ant-dropdown-menu {
+    max-height: 320px;
+    box-shadow: none;
+  }
+  // 文字提示：antd 用 filter: drop-shadow 画柔和投影，换成错位阴影；描边画在内侧
+  //（提示贴着屏幕边缘时，画在外面的描边会被裁掉一侧）
+  .ant-tooltip {
+    filter: none;
+  }
+  .ant-tooltip .ant-tooltip-container {
+    box-shadow: var(--v2b-ring-inset-shadow-sm);
+  }
+  // 浮层与触发它的控件之间再错开一段，留出描边与阴影的位置（antd 只留 4px：控件向下的阴影会碰到浮层的描边，
+  // 向上弹出时浮层的阴影会压住控件）。antd 按浮层外层的实际位置对齐，外层的 margin、transform 都会被抵消，
+  // 所以移动里面画出底色的一层；下拉框的底色、描边本来画在外层上，改到里面一层（antd 包在列表外的 div）。
+  // 带箭头的日期范围选择本来就隔开了，不动
+  .ant-select-dropdown {
+    overflow: visible;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .ant-select-dropdown > div {
+    overflow: hidden;
+    padding: var(--ant-padding-xxs);
+    border-radius: inherit;
+    background: var(--ant-color-bg-elevated);
+  }
+  $popup-panel: ':is(.ant-select-dropdown > div, .ant-picker-dropdown > .ant-picker-panel-container, .ant-dropdown > .ant-dropdown-menu, .ant-dropdown > .ant-table-filter-dropdown, .ant-tooltip > .ant-tooltip-container)';
+  [class*='-placement-bottom'] > #{$popup-panel} {
+    translate: 0 var(--v2b-popup-gap, 0px);
+  }
+  [class*='-placement-top'] > #{$popup-panel} {
+    translate: 0 calc(-1 * var(--v2b-popup-gap-top, 0px));
+  }
+  [class*='-placement-left'] > #{$popup-panel} {
+    translate: calc(-1 * var(--v2b-popup-gap, 0px)) 0;
+  }
+  [class*='-placement-right'] > #{$popup-panel} {
+    translate: var(--v2b-popup-gap, 0px) 0;
+  }
+  // 下拉列表（虚拟滚动）的滚动条：antd 是写在行内样式里的黑色 50%，暗色下看不见
+  .ant-select-dropdown .ant-select-dropdown-list-scrollbar-thumb {
+    background: color-mix(in srgb, var(--ant-color-text) 40%, transparent) !important;
+  }
+  // 抽屉：左边缘的描边用阴影画（占宽度时内容区窄 2px，节点「HYSTERIA版本」会折行）
+  .ant-drawer-right > .ant-drawer-content-wrapper {
+    box-shadow: var(--v2b-drawer-edge);
+  }
+  .ant-drawer .ant-drawer-header {
+    border-bottom: var(--v2b-line-width) solid var(--v2b-line);
+  }
+}

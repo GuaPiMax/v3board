@@ -1,0 +1,16 @@
+node_modules
+dist
+# 本地开发用的运行时配置（从 public/config.example.js 复制后修改，开发服务器以 /config.js 提供）
+config.local.js
+# 从原版 umi.js / css 提取的参考资料（只在本地使用，不提交）
+.umi-src
+# 视觉比对产物与浏览器 profile
+tools/visual-diff/out
+tools/visual-diff/.chrome-profile
+# 本机的开发笔记（迁移进度、验证记录、部署细节、全量回归脚本），不公开
+/notes
+# Cloudflare Workers 本地运行（wrangler dev）的变量与缓存；变量的示例在 .dev.vars.example
+.dev.vars
+.wrangler
+*.log
+.DS_Store

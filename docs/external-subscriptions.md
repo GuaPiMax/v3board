@@ -24,11 +24,11 @@ php artisan route:clear
 
 4. 确认 PHP CLI 与 Web 都有 cURL、OpenSSL、mbstring、PDO，以及项目原有扩展；CLI 版本应与部署环境一致（本次使用 PHP 8.4 测试）。保持原有 Redis/缓存可用。
 5. 确认原有 Laravel 调度任务每分钟运行 `php artisan schedule:run`。本功能已注册每 30 分钟同步，不需要另起一个重复的定时任务。
-6. 如果使用 Webman、常驻 PHP 或缓存路由，按现有部署方式重启/刷新。本功能未修改现有 update.sh；首次迁移需要单独执行。
-7. 访问 `https://你的域名/你的后台路径/external-subscriptions`，使用本站管理员账号登录。后台路径与主后台一致，页面没有修改主后台打包 JS。
+6. 现有站执行 update.sh 会自动安装锁定依赖、迁移并清理视图和路由缓存。如果使用 Webman、常驻 PHP 或缓存路由，按现有部署方式重启/刷新。
+7. 登录原后台，在「服务器 → 第三方订阅」管理来源；地址为 `https://你的域名/你的后台路径#/external-subscriptions`。原独立页地址自动跳转到此处。
 8. 新增来源，填写最终订阅 URL，多选套餐并保存；点击“同步”，检查节点数与诊断。选择一个有效测试用户分别导入常用客户端验证真实连接。
 
-管理员接口沿用本站 admin 中间件。页面登录令牌仅留在页面内存，刷新/关闭需重新登录。API 不回显来源 URL；编辑 URL 留空表示保留。新增来源与快照使用 APP_KEY 加密保存，因此必须备份并保持 APP_KEY，不能直接换 key 后期望旧快照仍可读取。
+管理员接口沿用本站 admin 中间件。页面复用原后台登录令牌与布局，不需要第二次登录。在「财务 → 订阅管理 → 编辑订阅」也可以多选第三方来源；两边编辑的是同一组绑定。旧表单检测到绑定变更时会拒绝覆盖，请关闭并重新打开编辑。API 不回显来源 URL；编辑 URL 留空表示保留。新增来源与快照使用 APP_KEY 加密保存，因此必须备份并保持 APP_KEY，不能直接换 key 后期望旧快照仍可读取。
 
 ## 支持范围和明确限制
 
@@ -49,7 +49,7 @@ php artisan route:clear
 php tests/external-subscriptions.php
 ```
 
-测试使用 SQLite 内存数据库、虚构链接和模拟来源，不读取生产数据库。需要安装开发依赖与 pdo_sqlite。不要针对生产连接改写该测试。Windows 上项目原有 config/horizon.php 使用系统信息组件，需要 COM/WMI 权限；Linux 使用原有系统信息实现。
+测试使用 SQLite 内存数据库、虚构链接和模拟来源，不读取生产数据库。需要安装开发依赖与 pdo_sqlite。不要针对生产连接改写该测试。完整后台绑定回归另运行 `vendor/bin/phpunit`；前端检查在 frontend/admin 执行 `pnpm typecheck && pnpm lint && pnpm test`。
 
 测试覆盖解析、七种协议输出、独立凭据、SS 2022、ALPN、注入防护、SSRF 内网阻断、授权、绑定、缓存失效、同步失败和编辑竞态。可选 `_demo/baseline` 对照是本次验证时从基线提交导出的客户端类（类名加 Baseline 前缀），不属于发布产物。
 
@@ -57,7 +57,7 @@ php tests/external-subscriptions.php
 
 ## 上游升级
 
-来源逻辑、页面、路由和数据表独立保存，但协议生成器仍需保留凭据接入。不能承诺任意未来上游版本自动零冲突。
+来源逻辑、页面、路由和数据表按模块保存，但协议生成器仍需保留凭据接入。后台源码在 frontend/admin，构建说明和基线见 frontend/admin/UPSTREAM.md。不能承诺任意未来上游版本自动零冲突。
 
 1. 在独立分支合并上游，不要将 fork 分支直接 reset 到上游。
 2. 重点检查 `ClientController`、用户 `ServerController`、`Console/Kernel.php`、`Helper::buildUri`、`Protocols/*` 与 `routes/web.php` 的接入点。

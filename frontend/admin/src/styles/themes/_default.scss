@@ -1,0 +1,25 @@
+// 由 tools/css-extract/themes.mjs 从原版 theme/default.css 生成（仅管理端用到的规则），请勿手改。
+:where(html[data-v2b-color='default']) h1,
+:where(html[data-v2b-color='default']) h2,
+:where(html[data-v2b-color='default']) h3,
+:where(html[data-v2b-color='default']) h4,
+:where(html[data-v2b-color='default']) h5,
+:where(html[data-v2b-color='default']) h6 {
+  color: rgba(0,0,0,0.85);
+}
+:where(html[data-v2b-color='default']) a {
+  color: #0665d0;
+}
+:where(html[data-v2b-color='default']) a:hover {
+  color: #2a84de;
+}
+:where(html[data-v2b-color='default']) a:active {
+  color: #004aab;
+}
+:where(html[data-v2b-color='default']) ::selection {
+  color: #fff;
+  background: #0665d0;
+}
+html:where([data-v2b-color='default']) {
+  --antd-wave-shadow-color: #0665d0;
+}
