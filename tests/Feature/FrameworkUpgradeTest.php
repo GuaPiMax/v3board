@@ -87,6 +87,66 @@ class FrameworkUpgradeTest extends TestCase
         $this->assertSame(['title'=>'Welcome'],config('theme.upgrade-test'));
     }
 
+    public function test_revocation_and_role_changes_take_effect_despite_old_identity_cache(): void
+    {
+        $user=User::create(['email'=>'revoke@example.com','password'=>'unused','uuid'=>'revocation-uuid','token'=>'revocation-sub','is_admin'=>1]);
+        $service=new AuthService($user);$request=\Illuminate\Http\Request::create('/');
+        $first=$service->generateAuthData($request)['auth_data'];
+        $second=$service->generateAuthData($request)['auth_data'];
+        $this->assertNotFalse(AuthService::decryptAuthData($first));
+        // Simulate the identity cache populated by earlier releases.
+        \Illuminate\Support\Facades\Cache::put($first,['id'=>$user->id,'email'=>$user->email,'is_admin'=>1,'is_staff'=>0],3600);
+        $session=array_key_first($service->getSessions());
+        $this->assertTrue($service->removeSession($session));
+        $this->assertFalse(AuthService::decryptAuthData($first));
+        $this->assertNotFalse(AuthService::decryptAuthData($second));
+        $user->is_admin=0;$user->save();
+        $this->assertSame(0,AuthService::decryptAuthData($second)['is_admin']);
+        $user->banned=1;$user->save();
+        $this->assertFalse(AuthService::decryptAuthData($second));
+        \Illuminate\Support\Facades\Cache::put('not-a-jwt',['id'=>$user->id,'is_admin'=>1],3600);
+        $this->assertFalse(AuthService::decryptAuthData('not-a-jwt'));
+    }
+
+    public function test_login_fails_explicitly_when_session_storage_fails(): void
+    {
+        $user=User::create(['email'=>'cache-failure@example.com','password'=>'unused','uuid'=>'cache-failure','token'=>'sub']);
+        $lock=\Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
+        $lock->shouldReceive('block')->once()->andReturnUsing(fn($seconds,$callback)=>$callback());
+        \Illuminate\Support\Facades\Cache::shouldReceive('lock')->once()->with('auth-sessions-'.$user->id,10)->andReturn($lock);
+        \Illuminate\Support\Facades\Cache::shouldReceive('get')->once()->andReturn([]);
+        \Illuminate\Support\Facades\Cache::shouldReceive('put')->once()->andReturn(false);
+        try {
+            (new AuthService($user))->generateAuthData(\Illuminate\Http\Request::create('/'));
+            $this->fail('An unusable login token must not be returned');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->assertSame(503,$e->getStatusCode());
+        }
+    }
+
+    public function test_doctor_reports_failures_without_outputting_secrets(): void
+    {
+        config(['app.key'=>'private-key-marker-do-not-print','cache.default'=>'array']);
+        $exit=\Illuminate\Support\Facades\Artisan::call('v3board:doctor');
+        $output=\Illuminate\Support\Facades\Artisan::output();
+        $this->assertSame(1,$exit);
+        $this->assertStringContainsString('FAIL',$output);
+        $this->assertStringNotContainsString('private-key-marker-do-not-print',$output);
+    }
+
+    public function test_temporary_session_backend_failure_is_not_reported_as_invalid_login(): void
+    {
+        $token=\Firebase\JWT\JWT::encode(['id'=>1,'session'=>'test-session'],config('app.key'),'HS256');
+        \Illuminate\Support\Facades\Cache::shouldReceive('get')->once()->andThrow(new \RuntimeException('private-backend-details'));
+        try {
+            AuthService::decryptAuthData($token);
+            $this->fail('Backend outage must return a retryable service error');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->assertSame(503,$e->getStatusCode());
+            $this->assertStringNotContainsString('private-backend-details',$e->getMessage());
+        }
+    }
+
     public function test_mail_uses_symfony_transport_and_queue_names_are_preserved(): void
     {
         config(['mail.driver'=>'array']);Mail::purge();

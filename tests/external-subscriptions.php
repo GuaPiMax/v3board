@@ -39,6 +39,12 @@ $uris = [
 $parser = new Parser(); $parsed = $parser->parse(implode("\n", $uris));
 check(count($parsed['nodes']) === 7 && !$parsed['errors'], 'Seven protocol parsing');
 check($parser->parse(base64_encode(implode("\n", $uris))) === $parsed, 'Base64 subscription');
+check($parser->parse("\xEF\xBB\xBF".implode("\n",$uris))===$parsed,'UTF-8 BOM subscription');
+check($parser->parse(base64_encode("\xEF\xBB\xBF".implode("\n",$uris)))===$parsed,'Base64 subscription with BOM');
+check($parser->parse('trojan://secret@node.example.com:443#%FF')['nodes']===[],'Invalid UTF-8 rejected per node');
+check($parser->parse('ss://2022-blake3-aes-128-gcm:bad-key@node.example.com:443')['nodes']===[],'Invalid SS2022 key rejected');
+check(count($parser->parse('ss://2022-blake3-aes-128-gcm:'.rawurlencode(base64_encode(str_repeat('k',16))).'@node.example.com:443')['nodes'])===1,'Valid SS2022 key accepted');
+check($parser->parse('vless://'.$uuid.'@node.example.com:443?security=reality&pbk=invalid')['nodes']===[],'Invalid Reality key rejected');
 check(count($parser->parse($uris[0] . "\n" . $uris[0])['nodes']) === 1, 'Exact duplicates');
 check($parser->parse('ss://bad')['nodes'] === [], 'Invalid SS');
 check($parser->parse('trojan://secret@node.example.com:443?plugin=unexpected')['nodes'] === [], 'Unknown options rejected');
@@ -110,14 +116,29 @@ $before=DB::table('v2_external_subscription')->where('id',$sourceId)->value('sna
 $app->instance(Fetcher::class,new class($sourceId,$uris[0]) extends Fetcher {private $id;private $uri;public function __construct($id,$uri){$this->id=$id;$this->uri=$uri;}public function fetch(string $url):string{DB::table('v2_external_subscription')->where('id',$this->id)->increment('revision');return $this->uri;}});
 check(!$service->sync($sourceId),'Stale in-flight sync discarded');
 check(DB::table('v2_external_subscription')->where('id',$sourceId)->value('snapshot')===$before,'Concurrent edit snapshot preserved');
+// Multiple large snapshots must be loaded in bounded batches and stop at the response limit.
+$batch=[];for($i=0;$i<1000;$i++)$batch[]=array_merge($nodes[0],['name'=>'Stress '.$i]);
+$encrypted=Crypt::encryptString(json_encode($batch,JSON_THROW_ON_ERROR));$stressIds=[];
+for($i=0;$i<5;$i++){
+    $id=DB::table('v2_external_subscription')->insertGetId(['name'=>'Stress','url'=>Crypt::encryptString('https://example.com/fixture'),'snapshot'=>$encrypted,'synced_at'=>time(),'updated_at'=>time()]);
+    $stressIds[]=$id;DB::table('v2_external_subscription_plan')->insert(['subscription_id'=>$id,'plan_id'=>1]);
+}
+DB::enableQueryLog();DB::flushQueryLog();$largeResult=$service->nodes($user);$queryLog=DB::getQueryLog();DB::disableQueryLog();
+$sourceQueries=array_filter($queryLog,fn($q)=>str_contains($q['query'],'"v2_external_subscription" as "s"'));
+check(count($largeResult)===3000,'Large response node limit');
+check(count($sourceQueries)===4,'Snapshot batching stops before loading unused sources');
+DB::table('v2_external_subscription_plan')->whereIn('subscription_id',$stressIds)->delete();
+DB::table('v2_external_subscription')->whereIn('id',$stressIds)->delete();unset($largeResult,$encrypted,$batch);
 // Real registered API routes: authentication, authorization, binding validation, edits and deletion.
 $routePath = null;
 foreach ($app['router']->getRoutes() as $route) {
     if (strpos($route->getActionName(), 'ExternalSubscriptionController@fetch') !== false) $routePath = '/' . $route->uri();
 }
 check($routePath !== null, 'Extension route auto discovery');
-Cache::put('test-admin-token', ['id'=>1,'is_admin'=>1], 600);
-Cache::put('test-user-token', ['id'=>2,'is_admin'=>0], 600);
+Schema::create('v2_user', function(Blueprint $t){$t->increments('id');$t->string('email');$t->integer('is_admin');$t->integer('is_staff')->default(0);$t->integer('banned')->default(0);$t->string('token');});
+DB::table('v2_user')->insert([['id'=>1,'email'=>'admin@example.com','is_admin'=>1,'token'=>'admin-sub'],['id'=>2,'email'=>'member@example.com','is_admin'=>0,'token'=>'member-sub']]);
+$adminToken=(new App\Services\AuthService(App\Models\User::find(1)))->generateAuthData(Illuminate\Http\Request::create('/'))['auth_data'];
+$memberToken=(new App\Services\AuthService(App\Models\User::find(2)))->generateAuthData(Illuminate\Http\Request::create('/'))['auth_data'];
 function api($method, $path, $token = null, $data = []) {
     global $app;
     $request=Illuminate\Http\Request::create($path,$method,$data,[],[],['HTTP_ACCEPT'=>'application/json','HTTP_ORIGIN'=>'http://localhost']);
@@ -125,24 +146,24 @@ function api($method, $path, $token = null, $data = []) {
     return $app->make(Illuminate\Contracts\Http\Kernel::class)->handle($request);
 }
 check(api('GET',$routePath)->getStatusCode()===403,'Anonymous API denied');
-check(api('GET',$routePath,'test-user-token')->getStatusCode()===403,'Ordinary user API denied');
-$response=api('GET',$routePath,'test-admin-token');
+check(api('GET',$routePath,$memberToken)->getStatusCode()===403,'Ordinary user API denied');
+$response=api('GET',$routePath,$adminToken);
 check($response->getStatusCode()===200 && strpos($response->getContent(),'secret')===false,'Admin fetch without credentials');
 $prefix=substr($routePath,0,-5);
 $data=['name'=>'New','url'=>'https://example.com/sub?token=private','enabled'=>true,'plan_ids'=>[1,2]];
-$response=api('POST',$prefix.'save','test-admin-token',$data);
+$response=api('POST',$prefix.'save',$adminToken,$data);
 check($response->getStatusCode()===200,'Create source: '.$response->getContent());
 $id=json_decode($response->getContent(),true)['data']['id'];
 check(DB::table('v2_external_subscription_plan')->where('subscription_id',$id)->count()===2,'Multi-plan binding persisted');
 check(strpos(DB::table('v2_external_subscription')->where('id',$id)->value('url'),'private')===false,'URL encrypted at rest');
 $data['id']=$id;$data['revision']=1;$data['plan_ids']=[2];$data['url']='';
-check(api('POST',$prefix.'save','test-admin-token',$data)->getStatusCode()===200,'Edit retains URL');
+check(api('POST',$prefix.'save',$adminToken,$data)->getStatusCode()===200,'Edit retains URL');
 check(DB::table('v2_external_subscription_plan')->where('subscription_id',$id)->count()===1,'Rebinding removes old plan');
-check(api('POST',$prefix.'save','test-admin-token',$data)->getStatusCode()===409,'Stale update rejected');
+check(api('POST',$prefix.'save',$adminToken,$data)->getStatusCode()===409,'Stale update rejected');
 $data['revision']=2;$data['plan_ids']=[999];
-check(api('POST',$prefix.'save','test-admin-token',$data)->getStatusCode()===422,'Nonexistent plan rejected');
-check(api('POST',$prefix.'drop','test-user-token',['id'=>$id])->getStatusCode()===403,'Ordinary user cannot delete');
-check(api('POST',$prefix.'drop','test-admin-token',['id'=>$id])->getStatusCode()===200,'Admin delete');
+check(api('POST',$prefix.'save',$adminToken,$data)->getStatusCode()===422,'Nonexistent plan rejected');
+check(api('POST',$prefix.'drop',$memberToken,['id'=>$id])->getStatusCode()===403,'Ordinary user cannot delete');
+check(api('POST',$prefix.'drop',$adminToken,['id'=>$id])->getStatusCode()===200,'Admin delete');
 check(DB::table('v2_external_subscription_plan')->where('subscription_id',$id)->count()===0,'Delete cleans bindings');
 $html=view('external-subscriptions',['adminPath'=>'test-admin'])->render();
 check(strpos($html,'@json')===false && strpos($html,'const adminPath = "test-admin"')!==false,'Real Blade template renders');

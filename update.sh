@@ -15,4 +15,7 @@ fi
 "$PHP_BIN" artisan view:clear
 "$PHP_BIN" artisan route:clear
 "$PHP_BIN" artisan v2board:update
+if [ "$(id -u)" -eq 0 ] && [ -f /etc/init.d/bt ] && id www >/dev/null 2>&1; then
+    chown -R www:www "$(pwd)"
+fi
 echo 'Updated. Reload PHP-FPM / restart Webman if applicable; Supervisor should restart Horizon.'

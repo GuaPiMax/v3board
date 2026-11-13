@@ -103,6 +103,14 @@ Supervisor 新增：名称 v3board-horizon；工作目录 /www/wwwroot/console.v
 
 ## 7. 验收
 
+先以 www 执行部署自检（不输出密码或令牌）：
+
+```bash
+su -s /bin/bash www -c 'cd /www/wwwroot/console.v3board.top && /www/server/php/84/bin/php artisan v3board:doctor'
+```
+
+FAIL 项目应先排查。此命令只检查 CLI，PHP-FPM/Nginx、Supervisor 和定时任务仍需按下面步骤确认。
+
 访问安装器输出的后台路径，登录并修改管理员密码，在系统设置中保存正确 HTTPS 站点地址。创建测试套餐。
 
 第三方订阅管理： https://console.v3board.top/你的后台路径/external-subscriptions 。新增来源、绑定套餐、手动同步，用有效测试用户导入常用客户端并验证连接。

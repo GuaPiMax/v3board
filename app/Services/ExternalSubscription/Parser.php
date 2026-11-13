@@ -13,8 +13,9 @@ class Parser
     public function parse(string $body): array
     {
         if (strlen($body) > self::MAX_BYTES) throw new InvalidArgumentException('订阅超过 2 MiB');
-        $body = trim($body);
+        $body = trim(preg_replace('/^\xEF\xBB\xBF/', '', $body));
         if (strpos($body, '://') === false) $body = $this->decode(preg_replace('/\s+/', '', $body));
+        $body = trim(preg_replace('/^\xEF\xBB\xBF/', '', $body));
         $nodes = []; $errors = []; $seen = [];
         $lines = preg_split('/\r\n|\n|\r/', $body);
         if (count($lines) > 5000) throw new InvalidArgumentException('订阅行数过多');
@@ -45,7 +46,7 @@ class Parser
 
     private function text($value, int $max = 512): string
     {
-        if (!is_scalar($value) || strlen((string)$value) > $max || preg_match('/[\x00-\x1f\x7f]/', (string)$value)) {
+        if (!is_scalar($value) || strlen((string)$value) > $max || !mb_check_encoding((string)$value, 'UTF-8') || preg_match('/[\x00-\x1f\x7f]/', (string)$value)) {
             throw new InvalidArgumentException('字段无效或过长');
         }
         return (string)$value;
@@ -67,6 +68,7 @@ class Parser
         if ($scheme === 'vmess') {
             $v = json_decode($this->decode(substr($uri, 8)), true, 32);
             if (!is_array($v)) throw new InvalidArgumentException('VMess JSON 无效');
+            if (!in_array($v['tls'] ?? '', ['', 'tls'], true)) throw new InvalidArgumentException('不支持的 VMess 安全参数');
             foreach ($v as $key => $value) {
                 if (!in_array($key, ['v','ps','add','port','id','aid','net','type','host','path','tls','sni','fp','alpn','scy'], true) && $value !== '') throw new InvalidArgumentException('包含尚未支持的 VMess 参数');
                 $this->text($value, 2048);
@@ -114,6 +116,13 @@ class Parser
         $n['name'] = $this->text($n['name'], 200);
         $n['external_credential'] = $this->text($n['external_credential'], 1024);
         if ($n['external_credential'] === '') throw new InvalidArgumentException('缺少节点凭据');
+        if ($scheme === 'ss' && strpos($n['cipher'], '2022-') === 0) {
+            $keyLength = $n['cipher'] === '2022-blake3-aes-128-gcm' ? 16 : 32;
+            foreach (explode(':', $n['external_credential']) as $key) {
+                $decoded = base64_decode($key, true);
+                if ($decoded === false || strlen($decoded) !== $keyLength) throw new InvalidArgumentException('SS 2022 密钥长度或编码无效');
+            }
+        }
         if (in_array($scheme, ['vmess','vless','tuic'], true) && !preg_match('/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/iD', $n['external_credential'])) throw new InvalidArgumentException('UUID 无效');
         if ($scheme === 'tuic' && $this->text($n['external_password'], 1024) === '') throw new InvalidArgumentException('缺少 TUIC 密码');
         $allowed = ['type','security','sni','peer','host','path','serviceName','fp','pbk','sid','flow','encryption',
@@ -138,6 +147,7 @@ class Parser
         $n['tls_settings'] = ['server_name' => $n['server_name'], 'allow_insecure' => $n['insecure'],
             'fingerprint' => $this->text($q['fp'] ?? 'chrome'), 'public_key' => $this->text($q['pbk'] ?? ''), 'short_id' => $this->text($q['sid'] ?? '')];
         if ($n['tls'] === 2 && ($scheme !== 'vless' || empty($q['pbk']))) throw new InvalidArgumentException('Reality 参数不完整或协议不支持');
+        if ($n['tls'] === 2 && (!preg_match('/^[A-Za-z0-9_-]{43}$/D', $n['tls_settings']['public_key']) || !preg_match('/^(?:[a-fA-F0-9]{2}){0,8}$/D', $n['tls_settings']['short_id']))) throw new InvalidArgumentException('Reality 公钥或 short ID 格式无效');
         $n['flow'] = $this->text($q['flow'] ?? '');
         if (!in_array($n['flow'], ['', 'xtls-rprx-vision'], true)) throw new InvalidArgumentException('不支持的 VLESS flow');
         if ($n['flow'] !== '' && ($scheme !== 'vless' || $n['network'] !== 'tcp' || !$n['tls'])) throw new InvalidArgumentException('VLESS flow 与传输参数不兼容');

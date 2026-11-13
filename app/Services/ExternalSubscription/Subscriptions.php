@@ -23,7 +23,7 @@ class Subscriptions
             $sources = DB::table('v2_external_subscription as s')
                 ->join('v2_external_subscription_plan as p', 'p.subscription_id', '=', 's.id')
                 ->where('p.plan_id', $user['plan_id'])->where('s.enabled', 1)
-                ->where('s.synced_at', '>', time() - 86400)->orderBy('s.id')->select('s.*')->get();
+                ->where('s.synced_at', '>', time() - 86400)->select('s.*')->lazyById(1, 's.id', 'id');
             $result = [];
             foreach ($sources as $source) {
                 try { $nodes = json_decode(Crypt::decryptString($source->snapshot), true, 64, JSON_THROW_ON_ERROR); }
@@ -74,7 +74,7 @@ class Subscriptions
                 return $updated > 0;
             } catch (\Throwable $e) {
                 // Only expose our own bounded, credential-free errors.
-                $message = get_class($e) === \RuntimeException::class || get_class($e) === \InvalidArgumentException::class
+                $message = in_array(get_class($e), [\RuntimeException::class, \InvalidArgumentException::class, \LengthException::class], true)
                     ? $e->getMessage() : '同步失败，请检查来源、网络和加密配置';
                 $query->update(['attempted_at' => time(), 'status' => mb_substr($message, 0, 2000)]);
                 return false;
