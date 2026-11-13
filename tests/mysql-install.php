@@ -50,13 +50,15 @@ try {
     // Simulate an installed site from before the prefix column existed.
     Illuminate\Support\Facades\Schema::table('v2_external_subscription', fn($t)=>$t->dropColumn('node_prefix'));
     Illuminate\Support\Facades\DB::table('migrations')->where('migration','2026_11_13_000002_add_external_subscription_node_prefix')->delete();
+    Illuminate\Support\Facades\Schema::table('v2_external_subscription', fn($t)=>$t->dropColumn('filter_keywords'));
+    Illuminate\Support\Facades\DB::table('migrations')->where('migration','2026_11_13_000003_add_external_subscription_filters')->delete();
     Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('config:cache')->andReturn(0);
     Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('horizon:terminate')->andReturn(0);
     $update=new App\Console\Commands\V2boardUpdate();$update->setLaravel($app);$update->setApplication((new ReflectionMethod($kernel,'getArtisan'))->invoke($kernel));
     for($i=0;$i<2;$i++)if($update->run(new Symfony\Component\Console\Input\ArrayInput([]),$buffer)!==0)throw new RuntimeException('Update failed: '.$buffer->fetch());
     if(Illuminate\Support\Facades\DB::table('v2_stat_user')->count()!==1)throw new RuntimeException('Update removed current traffic statistics');
     $old=Illuminate\Support\Facades\DB::table('v2_external_subscription')->where('id',$oldSource)->first();
-    if($old->node_prefix!=='' || $old->snapshot!=='old-encrypted-snapshot')throw new RuntimeException('Prefix upgrade changed existing source data');
+    if($old->node_prefix!=='' || $old->filter_keywords!==null || $old->snapshot!=='old-encrypted-snapshot')throw new RuntimeException('Source upgrade changed existing source data');
     // Exercise plan binding transactions against the actual MySQL-compatible schema.
     $plan=App\Models\Plan::create(['name'=>'Binding fixture','group_id'=>1,'transfer_enable'=>10]);
     $source=Illuminate\Support\Facades\DB::table('v2_external_subscription')->insertGetId(['name'=>'Fixture','url'=>Illuminate\Support\Facades\Crypt::encryptString('https://example.com/sub'),'updated_at'=>time()]);

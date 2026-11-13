@@ -12,9 +12,13 @@ class ExternalSubscriptionController extends Controller
 {
     public function fetch()
     {
-        $rows = DB::table('v2_external_subscription')->orderBy('id')->get(['id','name','node_prefix','enabled','revision','synced_at','attempted_at','status','node_count']);
+        $rows = DB::table('v2_external_subscription')->orderBy('id')->get(['id','name','node_prefix','filter_keywords','enabled','revision','synced_at','attempted_at','status','node_count']);
         $bindings = DB::table('v2_external_subscription_plan')->get()->groupBy('subscription_id');
-        foreach ($rows as $row) $row->plan_ids = isset($bindings[$row->id]) ? $bindings[$row->id]->pluck('plan_id')->all() : [];
+        foreach ($rows as $row) {
+            $row->plan_ids = isset($bindings[$row->id]) ? $bindings[$row->id]->pluck('plan_id')->all() : [];
+            $keywords = json_decode($row->filter_keywords ?? '[]', true);
+            $row->filter_keywords = is_array($keywords) && array_is_list($keywords) ? array_values(array_filter($keywords, 'is_string')) : [];
+        }
         return ['data' => $rows, 'plans' => DB::table('v2_plan')->orderBy('id')->get(['id','name'])];
     }
 
@@ -23,6 +27,8 @@ class ExternalSubscriptionController extends Controller
         $data = $request->validate(['id' => 'nullable|integer|min:1', 'revision' => 'nullable|integer|min:1',
             'name' => 'required|string|max:100', 'url' => 'nullable|string|max:4096',
             'node_prefix' => ['nullable', 'string', 'max:100', 'not_regex:/[\p{C}\x{2028}\x{2029}]/u'],
+            'filter_keywords' => 'sometimes|array|list|max:50',
+            'filter_keywords.*' => ['required', 'string', 'max:100', 'not_regex:/[\p{C}\x{2028}\x{2029}]/u'],
             'enabled' => 'required|boolean', 'plan_ids' => 'present|array|max:200',
             'plan_ids.*' => 'required|integer|min:1|distinct|exists:v2_plan,id']);
         if (!empty($data['url'])) {
@@ -33,6 +39,7 @@ class ExternalSubscriptionController extends Controller
             $values = ['name' => $data['name'], 'enabled' => $data['enabled'], 'updated_at' => time()];
             // Old clients may omit the field; only an explicit empty value clears it.
             if (array_key_exists('node_prefix', $data)) $values['node_prefix'] = $data['node_prefix'] ?? '';
+            if (array_key_exists('filter_keywords', $data)) $values['filter_keywords'] = json_encode(array_values(array_unique($data['filter_keywords'])), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
             if (!empty($data['id'])) {
                 $row = DB::table('v2_external_subscription')->where('id', $data['id'])->lockForUpdate()->first();
                 if (!$row) abort(404);

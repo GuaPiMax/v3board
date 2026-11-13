@@ -34,6 +34,8 @@ class ExternalPlanBindingsTest extends TestCase
         (new \CreateExternalSubscriptions)->up();
         require_once database_path('migrations/2026_11_13_000002_add_external_subscription_node_prefix.php');
         (new \AddExternalSubscriptionNodePrefix)->up();
+        require_once database_path('migrations/2026_11_13_000003_add_external_subscription_filters.php');
+        (new \AddExternalSubscriptionFilters)->up();
         $user = User::create(['email'=>'binding-admin@example.com','password'=>'unused','uuid'=>'binding-test','token'=>'binding-sub','is_admin'=>1]);
         $this->headers = ['authorization'=>(new AuthService($user))->generateAuthData(\Illuminate\Http\Request::create('/'))['auth_data']];
         $path = config('v2board.secure_path', config('v2board.frontend_admin_path', hash('crc32b', config('app.key'))));
@@ -93,6 +95,26 @@ class ExternalPlanBindingsTest extends TestCase
         $data['node_prefix']='';
         $this->postJson($path.'/save', $data, $this->headers)->assertOk();
         $this->assertSame('', DB::table('v2_external_subscription')->where('id',1)->value('node_prefix'));
+    }
+
+    public function test_filter_keywords_validate_round_trip_and_preserve_old_clients(): void
+    {
+        $path=$this->prefix.'/external-subscription';
+        $data=['id'=>1,'revision'=>1,'name'=>'Source 1','enabled'=>true,'url'=>'','plan_ids'=>[], 'filter_keywords'=>[' 香港 ', 'Test']];
+        $this->postJson($path.'/save',$data,$this->headers)->assertOk();
+        $this->getJson($path.'/fetch',$this->headers)->assertJsonPath('data.0.filter_keywords',['香港','Test']);
+        $data['revision']=2;unset($data['filter_keywords']);
+        $this->postJson($path.'/save',$data,$this->headers)->assertOk();
+        $this->assertSame(['香港','Test'],json_decode(DB::table('v2_external_subscription')->where('id',1)->value('filter_keywords'),true));
+        $data['revision']=3;
+        foreach (['text',null,[''],['   '],['bad'."\n".'keyword'],[str_repeat('长',101)],array_fill(0,51,'keyword'),['key'=>'keyword']] as $bad) {
+            $data['filter_keywords']=$bad;
+            $this->postJson($path.'/save',$data,$this->headers)->assertStatus(422);
+        }
+        $data['filter_keywords']=[];
+        $this->postJson($path.'/save',$data)->assertForbidden();
+        $this->postJson($path.'/save',$data,$this->headers)->assertOk();
+        $this->getJson($path.'/fetch',$this->headers)->assertJsonPath('data.0.filter_keywords',[]);
     }
 
     public function test_old_page_redirects_to_main_admin_and_apis_still_require_auth(): void

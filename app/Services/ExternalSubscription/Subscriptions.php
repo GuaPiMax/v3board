@@ -26,9 +26,20 @@ class Subscriptions
                 ->where('s.synced_at', '>', time() - 86400)->select('s.*')->lazyById(1, 's.id', 'id');
             $result = [];
             foreach ($sources as $source) {
-                try { $nodes = json_decode(Crypt::decryptString($source->snapshot), true, 64, JSON_THROW_ON_ERROR); }
+                try {
+                    $nodes = json_decode(Crypt::decryptString($source->snapshot), true, 64, JSON_THROW_ON_ERROR);
+                    $keywords = json_decode($source->filter_keywords ?? '[]', true, 8, JSON_THROW_ON_ERROR);
+                    // Corrupt rules must not accidentally expose nodes an administrator intended to hide.
+                    if (!is_array($keywords) || !array_is_list($keywords) || count($keywords) > 50) continue;
+                    foreach ($keywords as $keyword) {
+                        if (!is_string($keyword) || $keyword === '' || mb_strlen($keyword) > 100) continue 2;
+                    }
+                }
                 catch (\Throwable $e) { continue; }
                 foreach ($nodes as $i => $node) {
+                    foreach ($keywords as $keyword) {
+                        if (mb_stripos($node['name'], $keyword, 0, 'UTF-8') !== false) continue 2;
+                    }
                     $node['id'] = -($source->id * 1001 + $i + 1);
                     $node['name'] = ($source->node_prefix ?? '') . $node['name'];
                     $node['updated_at'] = $source->synced_at;

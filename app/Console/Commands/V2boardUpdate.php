@@ -60,7 +60,7 @@ class V2boardUpdate extends Command
             }
         }
         if ($skipped) $this->line('跳过已存在或已移除的历史结构变更：' . $skipped);
-        if ($this->call('migrate', ['--path' => ['database/migrations/2026_11_13_000001_create_external_subscriptions.php', 'database/migrations/2026_11_13_000002_add_external_subscription_node_prefix.php'], '--force' => true]) !== 0) return self::FAILURE;
+        if ($this->call('migrate', ['--path' => ['database/migrations/2026_11_13_000001_create_external_subscriptions.php', 'database/migrations/2026_11_13_000002_add_external_subscription_node_prefix.php', 'database/migrations/2026_11_13_000003_add_external_subscription_filters.php'], '--force' => true]) !== 0) return self::FAILURE;
         \Artisan::call('horizon:terminate');
         $this->info('更新完毕，队列服务已重启，你无需进行任何操作。');
     }

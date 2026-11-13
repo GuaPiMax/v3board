@@ -6,6 +6,7 @@ export interface ExternalSubscription {
   id: number
   name: string
   node_prefix: string
+  filter_keywords: string[]
   enabled: number | boolean
   revision: number
   synced_at: number | null
@@ -30,6 +31,7 @@ export function useExternalSubscriptions(enabled = true) {
 
 export type SourceForm = Pick<ExternalSubscription, 'name' | 'plan_ids'> & {
   node_prefix?: string
+  filter_keywords?: string[]
   id?: number
   revision?: number
   enabled: boolean

@@ -40,11 +40,12 @@ export default function ExternalSubscriptionPage() {
         ? {
             name: source.name,
             node_prefix: source.node_prefix ?? '',
+            filter_keywords: source.filter_keywords ?? [],
             enabled: Boolean(source.enabled),
             plan_ids: source.plan_ids,
             url: '',
           }
-        : { name: '', node_prefix: '', enabled: true, plan_ids: [], url: '' },
+        : { name: '', node_prefix: '', filter_keywords: [], enabled: true, plan_ids: [], url: '' },
     )
     setEditing(source)
   }
@@ -76,10 +77,11 @@ export default function ExternalSubscriptionPage() {
     }
   }
   const columns: TableColumnsType<ExternalSubscription> = [
-    { title: '名称', dataIndex: 'name', key: 'name' },
+    { title: '名称', dataIndex: 'name', key: 'name', width: 160 },
     {
       title: '节点前缀',
       dataIndex: 'node_prefix',
+      width: 120,
       key: 'prefix',
       render: (prefix: string) =>
         prefix ? (
@@ -90,11 +92,13 @@ export default function ExternalSubscriptionPage() {
     },
     {
       title: '状态',
+      width: 80,
       key: 'enabled',
       render: (_, row) => <Tag color={row.enabled ? 'green' : 'default'}>{row.enabled ? '启用' : '停用'}</Tag>,
     },
     {
       title: '绑定套餐',
+      width: 180,
       key: 'plans',
       render: (_, row) =>
         row.plan_ids.length ? (
@@ -105,9 +109,25 @@ export default function ExternalSubscriptionPage() {
           <Typography.Text type="secondary">未绑定</Typography.Text>
         ),
     },
-    { title: '节点数', dataIndex: 'node_count', key: 'nodes' },
+    {
+      title: '过滤关键词',
+      key: 'filters',
+      width: 200,
+      render: (_, row) =>
+        row.filter_keywords?.length ? (
+          row.filter_keywords.map((keyword) => (
+            <Tag key={keyword} style={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+              {keyword}
+            </Tag>
+          ))
+        ) : (
+          <Typography.Text type="secondary">无</Typography.Text>
+        ),
+    },
+    { title: '同步节点数', dataIndex: 'node_count', key: 'nodes', width: 110 },
     {
       title: '最近成功',
+      width: 180,
       key: 'success',
       render: (_, row) => (
         <span>
@@ -197,7 +217,7 @@ export default function ExternalSubscriptionPage() {
           dataSource={data?.sources ?? []}
           columns={columns}
           pagination={false}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1600 }}
         />
       </TableBlock>
       <Drawer
@@ -231,6 +251,20 @@ export default function ExternalSubscriptionPage() {
             extra="直接拼接原节点名，例如「备用」＋「香港A」＝「备用香港A」。留空保留原名；需要分隔时可填写空格。重名时追加 (2)、(3) 等序号。保存后下次获取订阅生效，无需重新同步。"
           >
             <Input maxLength={100} placeholder="例如：备用" />
+          </Form.Item>
+          <Form.Item
+            label="过滤关键词"
+            name="filter_keywords"
+            rules={[{ type: 'array', max: 50 }]}
+            extra="输入关键词后按回车，可设置多个。原始节点名包含任意关键词即隐藏，英文不区分大小写，前缀不参与匹配。最多 50 个，每个最多 100 字符；清空恢复下发，保存后无需重新同步。同步节点数为过滤前数量。"
+          >
+            <Select
+              mode="tags"
+              allowClear
+              maxCount={50}
+              tokenSeparators={['\n', '\r']}
+              placeholder="例如：剩余流量、到期、官网（分别输入后按回车）"
+            />
           </Form.Item>
           <Form.Item
             label="订阅链接"
